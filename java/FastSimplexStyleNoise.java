@@ -470,12 +470,12 @@ public class FastSimplexStyleNoise {
 	// Alternates between half-lattices.
 	private static final int[][][] NEIGHBOR_MAP_3D = {
 		{
-			{ 512, 512, 512 }, { 513, 512, 512 }, { 512, 513, 512 }, { 513, 513, 512 },
-			{ 512, 512, 513 }, { 513, 512, 513 }, { 512, 513, 513 }, { 513, 513, 513 }
+			{ 1024, 1024, 1024 }, { 1025, 1024, 1024 }, { 1024, 1025, 1024 }, { 1025, 1025, 1024 },
+			{ 1024, 1024, 1025 }, { 1025, 1024, 1025 }, { 1024, 1025, 1025 }, { 1025, 1025, 1025 }
 		},
 		{
-			{ -512, -512, -512 }, { -513, -512, 512 }, { -512, -513, -512 }, { -513, -513, -512 },
-			{ -512, -512, -513 }, { -513, -512, -513 }, { -512, -513, -513 }, { -513, -513, 513 }
+			{ -1024, -1024, -1024 }, { -1025, -1024, 1024 }, { -1024, -1025, -1024 }, { -1025, -1025, -1024 },
+			{ -1024, -1024, -1025 }, { -1025, -1024, -1025 }, { -1024, -1025, -1025 }, { -1025, -1025, 1025 }
 		},
 	};
 	
@@ -496,7 +496,7 @@ public class FastSimplexStyleNoise {
 		LatticePoint3D nextOnFailure, nextOnSuccess;
 		public LatticePoint3D(int xrv, int yrv, int zrv, int lattice) {
 			this.dxr = -xrv + lattice * 0.5; this.dyr = -yrv + lattice * 0.5; this.dzr = -zrv + lattice * 0.5;
-			this.xrv = xrv + lattice * 512; this.yrv = yrv + lattice * 512; this.zrv = zrv + lattice * 512;
+			this.xrv = xrv + lattice * 1024; this.yrv = yrv + lattice * 1024; this.zrv = zrv + lattice * 1024;
 		}
 	}
 	
@@ -535,9 +535,9 @@ public class FastSimplexStyleNoise {
 		double gx, gy, gz, gOff;
 		public AreaGenLatticePoint3D(GenerateContext3D context, int xsv, int ysv, int zsv, int lattice) {
 			this.xsv = xsv; this.ysv = ysv; this.zsv = zsv; this.lattice = lattice;
-			double xr = (xsv - lattice * 512.5);
-			double yr = (ysv - lattice * 512.5);
-			double zr = (zsv - lattice * 512.5);
+			double xr = (xsv - lattice * 1024.5);
+			double yr = (ysv - lattice * 1024.5);
+			double zr = (zsv - lattice * 1024.5);
 			
 			// Quaternion multiplication for inverse rotation.
 			// https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/
