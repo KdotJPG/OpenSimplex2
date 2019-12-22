@@ -86,7 +86,7 @@ It would appear that the older 2D OpenSimplex comes out ahead of the refactored 
 
 ![3D Metrics FastSimplexStyleNoise](images/metrics_fssn3.png?raw=true)
 
-### OpenSimplex legacy vs DigitalShadow's refactor
+### OpenSimplex legacy vs DigitalShadow's refactor (4D)
 
 ![4D Metrics OpenSimplexNoise](images/metrics_osn4.png?raw=true)
 
