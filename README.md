@@ -6,7 +6,7 @@ The provided 3D function in **SuperSimplexNoise** is about as fast as optimized 
 
 The provided 3D function in **FastSimplexStyleNoise** is about as fast as common Simplex noise implementations, but uses a much different process.
 
-Both 2D functions are faster than the average.
+Both 2D functions are similar to or faster than the average.
 
 All functions also include speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (Does not use a "range").
 
