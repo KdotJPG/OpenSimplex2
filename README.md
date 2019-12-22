@@ -27,12 +27,13 @@ Includes 2D and 3D noise. 4D noise is coming!
 
 ### Updated OpenSimplexNoise, 2D
 
-![SuperSimplexNoise, 3D (Classic, 2D slice)](images/ssn3c.png?raw=true)
+![SuperSimplexNoise, 3D (Classic, 2D slice)](images/osn2.png?raw=true)
 
+---
 
 ### SuperSimplexNoise, 3D (Classic, 2D slice)
 
-![Updated OpenSimplexNoise, 2D](images/osn2.png?raw=true)
+![Updated OpenSimplexNoise, 2D](images/ssn3c.png?raw=true)
 
 ### FastSimplexStyleNoise, 3D (Classic, 2D slice)
 
@@ -42,6 +43,7 @@ Includes 2D and 3D noise. 4D noise is coming!
 
 ![Updated OpenSimplexNoise, 3D (Classic, 2D slice)](images/osn3c.png?raw=true)
 
+---
 
 ### SuperSimplexNoise, 3D (PlaneFirst, 2D slice)
 
@@ -57,6 +59,7 @@ Includes 2D and 3D noise. 4D noise is coming!
 
 ![Updated OpenSimplexNoise, 3D (PlaneFirst, 2D slice at z=0.5)](images/osn3pfb.png?raw=true)
 
+---
 
 ### Updated OpenSimplexNoise, 4D (2D slice)
 
@@ -83,7 +86,7 @@ It would appear that the older 2D OpenSimplex comes out ahead of the refactored 
 
 ![3D Metrics FastSimplexStyleNoise](images/metrics_fssn3.png?raw=true)
 
-### OpenSimplex legacy vs DigitalShadow's refactor
+### OpenSimplex legacy vs DigitalShadow's refactor (4D)
 
 ![4D Metrics OpenSimplexNoise](images/metrics_osn4.png?raw=true)
 
