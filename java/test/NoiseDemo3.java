@@ -15,7 +15,7 @@ public class NoiseDemo3
 	private static final double PERIOD = 128.0 / 1.632993161855452;
 	private static final int OFF_X = 2048;
 	private static final int OFF_Y = 2048;
-	private static GenerateType generateType = GenerateType.ShowDifference;
+	private static GenerateType generateType = GenerateType.Evaluator;
 	
 	private static final double FREQ = 1.0 / PERIOD;
 	
