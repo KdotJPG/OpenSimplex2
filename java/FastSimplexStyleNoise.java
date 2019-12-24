@@ -567,7 +567,7 @@ public class FastSimplexStyleNoise {
 		public boolean equals(Object obj) {
 			if (!(obj instanceof AreaGenLatticePoint3D)) return false;
 			AreaGenLatticePoint3D other = (AreaGenLatticePoint3D) obj;
-			return (other.xsv == this.xsv && other.ysv == this.ysv && other.zsv == this.zsv);
+			return (other.xsv == this.xsv && other.ysv == this.ysv && other.zsv == this.zsv && other.lattice == this.lattice);
 		}
 	}
 	
