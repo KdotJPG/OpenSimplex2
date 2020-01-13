@@ -1,25 +1,12 @@
 /**
  * K.jpg's SuperSimplex noise. Uses large kernels for smooth results.
- * - 2D is standard simplex, but with four points instead of three.
- *   Implemented using a lookup table.
- * - 3D is "Re-oriented 8-point BCC noise" which constructs an
+ *
+ * - 2D is standard simplex implemented using a lookup table.
+ * - 3D is "Re-oriented 4-point BCC noise" which constructs an
  *   isomorphic BCC lattice in a much different way than usual.
  *
- * Two 3D functions are provided:
- * - noise3_Classic rotates the BCC lattice 180 degrees about the
- *   main diagonal, to hide the BCC grid in cardinal slices, while
- *   still keeping each direction symmetric w.r.t the lattice.
- * - noise3_PlaneFirst gives X and Y better attributes as a plane,
- *   and allows the third coordinate to be time or the vertical
- *   coordinate in a generated world.
- *
- * Each noise uses a gradient set that is constructed by expanding
- * the "neighborhood figure" of the lattice, and normalizing it.
- * The resulting set of vectors is symmetric with the lattice, but
- * doesn't allow gradients to point directly towards each other,
- * and cause bright/dark spots in the noise. This may sound familiar.
- *
- * @author K.jpg
+ * Multiple versions of each function are provided. See the
+ * documentation above each, for more info.
  */
 import java.util.Queue;
 import java.util.LinkedList;
@@ -59,15 +46,37 @@ public class SuperSimplexNoise {
 	 */
 	
 	/**
-	 * 2D SuperSimplex noise, standard point evaluation.
-	 * Lookup table implementation inspired by DigitalShadow.
+	 * 2D SuperSimplex noise, standard lattice orientation.
 	 */
 	public double noise2(double x, double y) {
-		double value = 0;
 		
 		// Get points for A2* lattice
 		double s = 0.366025403784439 * (x + y);
 		double xs = x + s, ys = y + s;
+		
+		return noise2_Base(xs, ys);
+	}
+	
+	/**
+	 * 2D SuperSimplex noise, with Y pointing down the main diagonal.
+	 * Might be better for a 2D sandbox style game, where Y is vertical.
+	 * Probably slightly less optimal for heightmaps or continent maps.
+	 */
+	public double noise2_XBeforeY(double x, double y) {
+		
+		// Skew transform and rotation baked into one.
+		double xx = x * 0.7071067811865476;
+		double yy = y * 1.224744871380249;
+		
+		return noise2_Base(yy + xx, yy - xx);
+	}
+	
+	/**
+	 * 2D SuperSimplex noise base.
+	 * Lookup table implementation inspired by DigitalShadow.
+	 */
+	private double noise2_Base(double xs, double ys) {
+		double value = 0;
 		
 		// Get base points and offsets
 		int xsb = fastFloor(xs), ysb = fastFloor(ys);
@@ -106,7 +115,7 @@ public class SuperSimplexNoise {
 	 * 3D Re-oriented 8-point BCC noise, classic orientation
 	 * Proper substitute for what 3D SuperSimplex would be,
 	 * in light of Forbidden Formulae.
-	 * Use noise3_PlaneFirst instead, wherever appropriate.
+	 * Use noise3_XYBeforeZ or noise3_XZBeforeY instead, wherever appropriate.
 	 */
 	public double noise3_Classic(double x, double y, double z) {
 		
@@ -123,19 +132,42 @@ public class SuperSimplexNoise {
 	/**
 	 * 3D Re-oriented 8-point BCC noise, with better visual isotropy in (X, Y).
 	 * Recommended for 3D terrain and time-varied animations.
-	 * The third coordinate should always be the "different" coordinate in your use case.
-	 * If Y is vertical in world coordinates, call noise3_PlaneFirst(x, z, y).
-	 * For a time varied animation, call noise3_PlaneFirst(x, y, t).
+	 * The Z coordinate should always be the "different" coordinate in your use case.
+	 * If Y is vertical in world coordinates, call noise3_XYBeforeZ(x, z, Y) or use noise3_XZBeforeY.
+	 * If Z is vertical in world coordinates, call noise3_XYBeforeZ(x, y, Z).
+	 * For a time varied animation, call noise3_XYBeforeZ(x, y, T).
 	 */
-	public double noise3_PlaneFirst(double x, double y, double t) {
+	public double noise3_XYBeforeZ(double x, double y, double z) {
 		
 		// Re-orient the cubic lattices without skewing, to make X and Y triangular like 2D.
 		// Orthonormal rotation. Not a skew transform.
 		double xy = x + y;
 		double s2 = xy * -0.211324865405187;
-		double zz = t * 0.577350269189626;
+		double zz = z * 0.577350269189626;
 		double xr = x + s2 - zz, yr = y + s2 - zz;
 		double zr = xy * 0.577350269189626 + zz;
+		
+		// Evaluate both lattices to form a BCC lattice.
+		return noise3_BCC(xr, yr, zr);
+	}
+	
+	/**
+	 * 3D Re-oriented 8-point BCC noise, with better visual isotropy in (X, Z).
+	 * Recommended for 3D terrain and time-varied animations.
+	 * The Y coordinate should always be the "different" coordinate in your use case.
+	 * If Y is vertical in world coordinates, call noise3_XZBeforeY(x, Y, z).
+	 * If Z is vertical in world coordinates, call noise3_XZBeforeY(x, Z, y) or use noise3_XYBeforeZ.
+	 * For a time varied animation, call noise3_XZBeforeY(x, T, y) or use noise3_XYBeforeZ.
+	 */
+	public double noise3_XZBeforeY(double x, double y, double z) {
+		
+		// Re-orient the cubic lattices without skewing, to make X and Z triangular like 2D.
+		// Orthonormal rotation. Not a skew transform.
+		double xz = x + z;
+		double s2 = xz * -0.211324865405187;
+		double yy = y * 0.577350269189626;
+		double xr = x + s2 - yy; double zr = z + s2 - yy;
+		double yr = xz * 0.577350269189626 + yy;
 		
 		// Evaluate both lattices to form a BCC lattice.
 		return noise3_BCC(xr, yr, zr);
