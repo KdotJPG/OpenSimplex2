@@ -1,8 +1,9 @@
 ﻿/**
  * K.jpg's SuperSimplex noise. Uses large kernels for smooth results.
  *
- * - 2D is standard simplex implemented using a lookup table.
- * - 3D is "Re-oriented 4-point BCC noise" which constructs an
+ * - 2D is standard simplex, modified to support larger kernels.
+ *   Implemented using a lookup table.
+ * - 3D is "Re-oriented 8-point BCC noise" which constructs an
  *   isomorphic BCC lattice in a much different way than usual.
  *
  * Multiple versions of each function are provided. See the
