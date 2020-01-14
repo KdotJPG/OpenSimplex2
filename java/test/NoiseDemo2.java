@@ -1,6 +1,6 @@
 /*
  * Noise Demo 2D.
- * Replace SuperSimplexNoise with FastSimplexStyleNoise to test FastSimplexStyleNoise instead.
+ * Replace SuperSimplexNoise with FastSimplexStyleNoise to demo FastSimplexStyleNoise instead.
  */
 
 import java.awt.image.BufferedImage;
@@ -29,8 +29,8 @@ public class NoiseDemo2
 			throws IOException {
 		
 		// Initialize
-		SuperSimplexNoise noise = new SuperSimplexNoise(1234);
-		SuperSimplexNoise.GenerateContext2D noiseBulk = new SuperSimplexNoise.GenerateContext2D(FREQ, FREQ, 1.0);
+		SuperSimplexNoise noise = new SuperSimplexNoise(1);
+		SuperSimplexNoise.GenerateContext2D noiseBulk = new SuperSimplexNoise.GenerateContext2D(SuperSimplexNoise.LatticeOrientation2D.Standard, FREQ, FREQ, 1.0);
 		
 		// Generate
 		double[][] buffer = new double[HEIGHT][WIDTH];
@@ -46,7 +46,7 @@ public class NoiseDemo2
 				double evalValue = 0;
 				
 				if (generateType != GenerateType.AreaGenerator)
-					evalValue = noise.noise2((x + OFF_X) * FREQ, (y + OFF_Y) * FREQ);;
+					evalValue = noise.noise2((x + OFF_X) * FREQ, (y + OFF_Y) * FREQ);
 				
 				switch(generateType) {
 					case Evaluator:

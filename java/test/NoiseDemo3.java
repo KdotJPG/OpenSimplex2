@@ -1,6 +1,6 @@
 /*
  * Noise Demo 2D.
- * Replace SuperSimplexNoise with FastSimplexStyleNoise to test FastSimplexStyleNoise instead.
+ * Replace SuperSimplexNoise with FastSimplexStyleNoise to demo FastSimplexStyleNoise instead.
  */
 
 import java.awt.image.BufferedImage;
@@ -12,7 +12,7 @@ public class NoiseDemo3
 {
 	private static final int WIDTH = 1024;
 	private static final int HEIGHT = 1024;
-	private static final double PERIOD = 128.0 / 1.632993161855452;
+	private static final double PERIOD = 128.0;
 	private static final int OFF_X = 2048;
 	private static final int OFF_Y = 2048;
 	private static GenerateType generateType = GenerateType.Evaluator;
@@ -30,7 +30,7 @@ public class NoiseDemo3
 		
 		// Initialize
 		SuperSimplexNoise noise = new SuperSimplexNoise(1234);
-		SuperSimplexNoise.GenerateContext3D context = new SuperSimplexNoise.GenerateContext3D(SuperSimplexNoise.LatticeOrientation3D.PlaneFirst, FREQ, FREQ, FREQ, 1.0);
+		SuperSimplexNoise.GenerateContext3D context = new SuperSimplexNoise.GenerateContext3D(SuperSimplexNoise.LatticeOrientation3D.XYBeforeZ, FREQ, FREQ, FREQ, 1.0);
 		
 		// Generate
 		double[][] buffer = new double[HEIGHT][WIDTH];
@@ -46,7 +46,7 @@ public class NoiseDemo3
 				double evalValue = 0;
 				
 				if (generateType != GenerateType.AreaGenerator)
-					evalValue = noise.noise3_PlaneFirst((x + OFF_X) * FREQ, (y + OFF_Y) * FREQ, 0);
+					evalValue = noise.noise3_XYBeforeZ((x + OFF_X) * FREQ, (y + OFF_Y) * FREQ, 0);
 				
 				switch(generateType) {
 					case Evaluator:

@@ -256,11 +256,10 @@ public class SuperSimplexNoise {
 		// or flip a couple of coordinates, to guarantee it or a neighbor contributes.
 		// For An* lattices, the base coordinate seems fine.
 		double x0f = x0Skipped * context.xFrequency; double y0f = y0Skipped * context.yFrequency;
-		double s0 = 0.366025403784439 * (x0f + y0f);
-		double x0s = (x0f + s0), y0s = (y0f + s0);
+		double x0s = context.orientation.s00 * x0f + context.orientation.s01 * y0f;
+		double y0s = context.orientation.s10 * x0f + context.orientation.s11 * y0f;
 		int x0sb = fastFloor(x0s), y0sb = fastFloor(y0s);
 		AreaGenLatticePoint2D firstPoint = new AreaGenLatticePoint2D(context, x0sb, y0sb);
-		firstPoint.computeGradient(context, this);
 		queue.add(firstPoint);
 		seen.add(firstPoint);
 		
@@ -268,6 +267,13 @@ public class SuperSimplexNoise {
 			AreaGenLatticePoint2D point = queue.remove();
 			int destPointX = point.destPointX;
 			int destPointY = point.destPointY;
+			
+			// Prepare gradient vector
+			int pxm = point.xsv & PMASK, pym = point.ysv & PMASK;
+			Grad2 grad = context.orientation.gradients[perm[perm[pxm] ^ pym]];
+			double gx = grad.dx * context.xFrequency;
+			double gy = grad.dy * context.yFrequency;
+			double gOff = 0.5 * (gx + gy); // to correct for (0.5, 0.5)-offset kernel
 			
 			// Contribution kernel bounds
 			int yy0 = destPointY - scaledRadiusY; if (yy0 < y0Skipped) yy0 = y0Skipped;
@@ -290,7 +296,7 @@ public class SuperSimplexNoise {
 						
 					// gOff accounts for our choice to offset the pre-generated kernel by (0.5, 0.5) to avoid the zero center.
 					// I found almost no difference in performance using gOff vs not (under 1ns diff per value on my system)
-					double extrapolation = point.gx * dx + point.gy * dy + point.gOff;
+					double extrapolation = gx * dx + gy * dy + gOff;
 					buffer[yy - y0][xx - x0] += kernel[ky][kx] * extrapolation;
 					
 				}
@@ -305,9 +311,6 @@ public class SuperSimplexNoise {
 				if (neighbor.destPointX + scaledRadiusX >= x0Skipped && neighbor.destPointX - scaledRadiusX <= x0 + width - 1
 						&& neighbor.destPointY + scaledRadiusY >= y0Skipped && neighbor.destPointY - scaledRadiusY <= y0 + height - 1
 						&& !seen.contains(neighbor)) {
-					
-					// Since we're actually going to use it, we need to compute its gradient.
-					neighbor.computeGradient(context, this);
 					
 					// Add it to the queue so we can process it at some point
 					queue.add(neighbor);
@@ -348,7 +351,7 @@ public class SuperSimplexNoise {
 		
 		// Quaternion multiplication for rotation.
 		// https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/
-		double qx = context.qx, qy = context.qy, qz = context.qz, qw = context.qw;
+		double qx = context.orientation.qx, qy = context.orientation.qy, qz = context.orientation.qz, qw = context.orientation.qw;
 		double x0f = x0Skipped * context.xFrequency, y0f = y0Skipped * context.yFrequency, z0f = z0Skipped * context.zFrequency;
 		double tx = 2 * (qy * z0f - qz * y0f);
 		double ty = 2 * (qz * x0f - qx * z0f);
@@ -360,7 +363,6 @@ public class SuperSimplexNoise {
 		int x0rb = fastFloor(x0r), y0rb = fastFloor(y0r), z0rb = fastFloor(z0r);
 		
 		AreaGenLatticePoint3D firstPoint = new AreaGenLatticePoint3D(context, x0rb, y0rb, z0rb, 0);
-		firstPoint.computeGradient(context, this);
 		queue.add(firstPoint);
 		seen.add(firstPoint);
 		
@@ -369,6 +371,14 @@ public class SuperSimplexNoise {
 			int destPointX = point.destPointX;
 			int destPointY = point.destPointY;
 			int destPointZ = point.destPointZ;
+			
+			// Prepare gradient vector
+			int pxm = point.xsv & PMASK, pym = point.ysv & PMASK, pzm = point.zsv & PMASK;
+			Grad3 grad = context.orientation.gradients[perm[perm[perm[pxm] ^ pym] ^ pzm]];
+			double gx = grad.dx * context.xFrequency;
+			double gy = grad.dy * context.yFrequency;
+			double gz = grad.dz * context.zFrequency;
+			double gOff = 0.5 * (gx + gy + gz); // to correct for (0.5, 0.5, 0.5)-offset kernel
 			
 			// Contribution kernel bounds.
 			int zz0 = destPointZ - scaledRadiusZ; if (zz0 < z0Skipped) zz0 = z0Skipped;
@@ -400,7 +410,7 @@ public class SuperSimplexNoise {
 						int kx = dx + scaledRadiusX;
 							
 						// gOff accounts for our choice to offset the pre-generated kernel by (0.5, 0.5, 0.5) to avoid the zero center.
-						double extrapolation = point.gx * dx + point.gy * dy + point.gz * dz + point.gOff;
+						double extrapolation = gx * dx + gy * dy + gz * dz + gOff;
 						buffer[zz - z0][yy - y0][xx - x0] += kernel[kz][ky][kx] * extrapolation;
 						
 					}
@@ -418,9 +428,6 @@ public class SuperSimplexNoise {
 						&& neighbor.destPointY + scaledRadiusY >= y0Skipped && neighbor.destPointY - scaledRadiusY <= y0 + height - 1
 						&& neighbor.destPointZ + scaledRadiusZ >= z0Skipped && neighbor.destPointZ - scaledRadiusZ <= z0 + depth - 1
 						&& !seen.contains(neighbor)) {
-					
-					// Since we're actually going to use it, we need to compute its gradient.
-					neighbor.computeGradient(context, this);
 					
 					// Add it to the queue so we can process it at some point
 					queue.add(neighbor);
@@ -574,21 +581,12 @@ public class SuperSimplexNoise {
 	private static class AreaGenLatticePoint2D {
 		int xsv, ysv;
 		int destPointX, destPointY;
-		double gx, gy, gOff;
 		public AreaGenLatticePoint2D(GenerateContext2D context, int xsv, int ysv) {
 			this.xsv = xsv; this.ysv = ysv;
-			double ssv = (xsv + ysv) * -0.211324865405187;
-			// this.destPointX = (int)Math.round((xsv + ssv) * context.xFrequencyInverse + .5);
-			// this.destPointY = (int)Math.round((ysv + ssv) * context.yFrequencyInverse + .5);
-			this.destPointX = (int)Math.ceil((xsv + ssv) * context.xFrequencyInverse);
-			this.destPointY = (int)Math.ceil((ysv + ssv) * context.yFrequencyInverse);
-		}
-		public void computeGradient(GenerateContext2D context, SuperSimplexNoise instance) {
-			int pxm = xsv & PMASK, pym = ysv & PMASK;
-			Grad2 grad = instance.permGrad2[instance.perm[pxm] ^ pym];
-			this.gx = grad.dx * context.xFrequency;
-			this.gy = grad.dy * context.yFrequency;
-			this.gOff = 0.5 * (this.gx + this.gy); // to correct for (0.5, 0.5)-offset kernel
+			
+			//Matrix multiplication for inverse rotation. Simplex skew transforms have always been shorthand for matrices.
+			this.destPointX = (int)Math.ceil((context.orientation.t00 * xsv + context.orientation.t01 * ysv) * context.xFrequencyInverse);
+			this.destPointY = (int)Math.ceil((context.orientation.t10 * xsv + context.orientation.t11 * ysv) * context.yFrequencyInverse);
 		}
 		public int hashCode() {
 			return xsv * 7841 + ysv;
@@ -603,7 +601,6 @@ public class SuperSimplexNoise {
 	private static class AreaGenLatticePoint3D {
 		int xsv, ysv, zsv, lattice;
 		int destPointX, destPointY, destPointZ;
-		double gx, gy, gz, gOff;
 		public AreaGenLatticePoint3D(GenerateContext3D context, int xsv, int ysv, int zsv, int lattice) {
 			this.xsv = xsv; this.ysv = ysv; this.zsv = zsv; this.lattice = lattice;
 			double xr = (xsv - lattice * 1024.5);
@@ -612,7 +609,7 @@ public class SuperSimplexNoise {
 			
 			// Quaternion multiplication for inverse rotation.
 			// https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/
-			double qx = -context.qx, qy = -context.qy, qz = -context.qz, qw = context.qw;
+			double qx = -context.orientation.qx, qy = -context.orientation.qy, qz = -context.orientation.qz, qw = context.orientation.qw;
 			double tx = 2 * (qy * zr - qz * yr);
 			double ty = 2 * (qz * xr - qx * zr);
 			double tz = 2 * (qx * yr - qy * xr);
@@ -623,14 +620,6 @@ public class SuperSimplexNoise {
 			this.destPointX = (int)Math.ceil(xrr * context.xFrequencyInverse);
 			this.destPointY = (int)Math.ceil(yrr * context.yFrequencyInverse);
 			this.destPointZ = (int)Math.ceil(zrr * context.zFrequencyInverse);
-		}
-		public void computeGradient(GenerateContext3D context, SuperSimplexNoise instance) {
-			int pxm = xsv & PMASK, pym = ysv & PMASK, pzm = zsv & PMASK;
-			Grad3 grad = context.gradients[instance.perm[instance.perm[instance.perm[pxm] ^ pym] ^ pzm]];
-			this.gx = grad.dx * context.xFrequency;
-			this.gy = grad.dy * context.yFrequency;
-			this.gz = grad.dz * context.zFrequency;
-			this.gOff = 0.5 * (this.gx + this.gy + this.gz); // to correct for (0.5, 0.5, 0.5)-offset kernel
 		}
 		public int hashCode() {
 			return xsv * 2122193 + ysv * 2053 + zsv * 2 + lattice;
@@ -652,10 +641,12 @@ public class SuperSimplexNoise {
 		int scaledRadiusY;
 		double[][] kernel;
 		int[] kernelBounds;
+		LatticeOrientation2D orientation;
 		
-		public GenerateContext2D(double xFrequency, double yFrequency, double amplitude) {
+		public GenerateContext2D(LatticeOrientation2D orientation, double xFrequency, double yFrequency, double amplitude) {
 		
 			// These will be used by every call to generate
+			this.orientation = orientation;
 			this.xFrequency = xFrequency;
 			this.yFrequency = yFrequency;
 			this.xFrequencyInverse = 1.0 / xFrequency;
@@ -694,7 +685,7 @@ public class SuperSimplexNoise {
 							kernel[yy][xx] = 0.0;
 						}
 					}
-				} /* else kernel[yy] = kernel[2 * scaledRadiusY - yy - 1]; */
+				} /* else kernel[yy] = kernel[2 * scaledRadiusY - yy - 1];*/
 			}
 		}
 	}
@@ -713,30 +704,12 @@ public class SuperSimplexNoise {
 		double[][][] kernel;
 		int[] kernelBoundsY;
 		int[][] kernelBoundsX;
-		
-		double qx, qy, qz, qw;
-		Grad3[] gradients;
+		LatticeOrientation3D orientation;
 		
 		public GenerateContext3D(LatticeOrientation3D orientation, double xFrequency, double yFrequency, double zFrequency, double amplitude) {
-			
-			// Set up quaternions for lattice orientation.
-			// Could use matrices, but I already wrote this code before I moved them into here.
-			switch(orientation) {
-				case Classic:
-					qx = qy = qz = 0.577350269189626;
-					qw = 0;
-					gradients = GRADIENTS_3D_C;
-					break;
-				case PlaneFirst:
-					qx = 0.3250575836718682;
-					qy = -0.3250575836718682;
-					qz = 0.0;
-					qw = 0.8880738339771154;
-					gradients = GRADIENTS_3D_PF;
-					break;
-			}
 		
 			// These will be used by every call to generate
+			this.orientation = orientation;
 			this.xFrequency = xFrequency;
 			this.yFrequency = yFrequency;
 			this.zFrequency = zFrequency;
@@ -806,9 +779,42 @@ public class SuperSimplexNoise {
 		}
 	}
 	
+	public enum LatticeOrientation2D {
+		// Simplex skew transforms have always been shorthand for the matrices they represent.
+		// But when we bake the rotation into the skew transform, we need to use the general form.
+		Standard(GRADIENTS_2D,
+				1.366025403784439, 0.366025403784439, 0.366025403784439, 1.366025403784439,
+				0.788675134594813, -0.211324865405187, -0.211324865405187, 0.788675134594813),
+		XBeforeY(GRADIENTS_2D_X_BEFORE_Y,
+				 0.7071067811865476, 1.224744871380249, -0.7071067811865476, 1.224744871380249,
+				 0.7071067811865476, -0.7071067811865476, 0.40824829046764305, 0.40824829046764305);
+				 
+		Grad2[] gradients;
+		double s00, s01, s10, s11;
+		double t00, t01, t10, t11;
+		
+		private LatticeOrientation2D(Grad2[] gradients,
+									double s00, double s01, double s10, double s11,
+									double t00, double t01, double t10, double t11) {
+			this.gradients = gradients;
+			this.s00 = s00; this.s01 = s01; this.s10 = s10; this.s11 = s11;
+			this.t00 = t00; this.t01 = t01; this.t10 = t10; this.t11 = t11;
+		}
+	}
+	
 	public enum LatticeOrientation3D {
-		Classic,
-		PlaneFirst
+		// Quaternions for 3D. Could use matrices, but I already wrote this code before I moved them into here.
+		Classic(GRADIENTS_3D_CLASSIC, 0.577350269189626, 0.577350269189626, 0.577350269189626, 0),
+		XYBeforeZ(GRADIENTS_3D_XY_BEFORE_Z, 0.3250575836718682, -0.3250575836718682, 0, 0.8880738339771154),
+		XZBeforeY(GRADIENTS_3D_XZ_BEFORE_Y, -0.3250575836718682, 0, 0.3250575836718682, 0.8880738339771154);
+		
+		Grad3[] gradients;
+		double qx, qy, qz, qw;
+		
+		private LatticeOrientation3D(Grad3[] gradients, double qx, double qy, double qz, double qw) {
+			this.gradients = gradients;
+			this.qx = qx; this.qy = qy; this.qz = qz; this.qw = qw;
+		}
 	}
 	
 	/*
@@ -831,11 +837,12 @@ public class SuperSimplexNoise {
 	
 	public static final double N2 = 0.05382168030817933;
 	public static final double N3 = 0.2781926117527186;
-	private static final Grad2[] GRADIENTS_2D;
-	private static final Grad3[] GRADIENTS_3D, GRADIENTS_3D_C, GRADIENTS_3D_PF;
+	private static final Grad2[] GRADIENTS_2D, GRADIENTS_2D_X_BEFORE_Y;
+	private static final Grad3[] GRADIENTS_3D, GRADIENTS_3D_CLASSIC, GRADIENTS_3D_XY_BEFORE_Z, GRADIENTS_3D_XZ_BEFORE_Y;
 	static {
 		
 		GRADIENTS_2D = new Grad2[PSIZE];
+		GRADIENTS_2D_X_BEFORE_Y = new Grad2[PSIZE];
 		Grad2[] grad2 = {
 			new Grad2(                0.0,                 1.0),
 			new Grad2(                0.5,  0.8660254037844387),
@@ -850,16 +857,24 @@ public class SuperSimplexNoise {
 			new Grad2(-0.8660254037844387,                 0.5),
 			new Grad2(               -0.5,  0.8660254037844387)
 		};
+		Grad2[] grad2XBeforeY = new Grad2[grad2.length];
 		for (int i = 0; i < grad2.length; i++) {
 			grad2[i].dx /= N2; grad2[i].dy /= N2;
+			
+			// Unrotated gradients for XBeforeY 2D
+			double xx = grad2[i].dx * 0.7071067811865476;
+			double yy = grad2[i].dy * 0.7071067811865476;
+			grad2XBeforeY[i] = new Grad2(xx - yy, xx + yy);
 		}
 		for (int i = 0; i < PSIZE; i++) {
 			GRADIENTS_2D[i] = grad2[i % grad2.length];
+			GRADIENTS_2D_X_BEFORE_Y[i] = grad2XBeforeY[i % grad2XBeforeY.length];
 		}
 		
 		GRADIENTS_3D = new Grad3[PSIZE];
-		GRADIENTS_3D_C = new Grad3[PSIZE];
-		GRADIENTS_3D_PF = new Grad3[PSIZE];
+		GRADIENTS_3D_CLASSIC = new Grad3[PSIZE];
+		GRADIENTS_3D_XY_BEFORE_Z = new Grad3[PSIZE];
+		GRADIENTS_3D_XZ_BEFORE_Y = new Grad3[PSIZE];
 		Grad3[] grad3 = {
 			new Grad3(-2.22474487139,      -2.22474487139,      -1.0),
 			new Grad3(-2.22474487139,      -2.22474487139,       1.0),
@@ -910,8 +925,9 @@ public class SuperSimplexNoise {
 			new Grad3( 3.0862664687972017,  1.1721513422464978,  0.0),
 			new Grad3( 1.1721513422464978,  3.0862664687972017,  0.0)
 		};
-		Grad3[] grad3c = new Grad3[grad3.length];
-		Grad3[] grad3pf = new Grad3[grad3.length];
+		Grad3[] grad3Classic = new Grad3[grad3.length];
+		Grad3[] grad3XYBeforeZ = new Grad3[grad3.length];
+		Grad3[] grad3XZBeforeY = new Grad3[grad3.length];
 		for (int i = 0; i < grad3.length; i++) {
 			grad3[i].dx /= N3; grad3[i].dy /= N3; grad3[i].dz /= N3;
 			double gxr = grad3[i].dx, gyr = grad3[i].dy, gzr = grad3[i].dz;	
@@ -919,17 +935,23 @@ public class SuperSimplexNoise {
 			// Unrotated gradients for classic 3D
 			double grr = (2.0 / 3.0) * (gxr + gyr + gzr);
 			double dx = grr - gxr, dy = grr - gyr, dz = grr - gzr;
-			grad3c[i] = new Grad3( grr - gxr, grr - gyr, grr - gzr );
+			grad3Classic[i] = new Grad3( grr - gxr, grr - gyr, grr - gzr );
 			
-			// Unrotated gradients for plane-first 3D
+			// Unrotated gradients for XYBeforeZ 3D
 			double s2 = (gxr + gyr) * -0.211324865405187;
 			double zz = gzr * 0.577350269189626;
-			grad3pf[i] = new Grad3( gxr + s2 + zz, gyr + s2 + zz, (gzr - gxr - gyr) * 0.577350269189626 );
+			grad3XYBeforeZ[i] = new Grad3( gxr + s2 + zz, gyr + s2 + zz, (gzr - gxr - gyr) * 0.577350269189626 );
+			
+			// Unrotated gradients for plane-first 3D
+			s2 = (gxr + gzr) * -0.211324865405187;
+			double yy = gyr * 0.577350269189626;
+			grad3XZBeforeY[i] = new Grad3( gxr + s2 + yy, (gyr - gxr - gzr) * 0.577350269189626, gzr + s2 + yy );
 		}
 		for (int i = 0; i < PSIZE; i++) {
 			GRADIENTS_3D[i] = grad3[i % grad3.length];
-			GRADIENTS_3D_C[i] = grad3c[i % grad3c.length];
-			GRADIENTS_3D_PF[i] = grad3pf[i % grad3pf.length];
+			GRADIENTS_3D_CLASSIC[i] = grad3Classic[i % grad3Classic.length];
+			GRADIENTS_3D_XY_BEFORE_Z[i] = grad3XYBeforeZ[i % grad3XYBeforeZ.length];
+			GRADIENTS_3D_XZ_BEFORE_Y[i] = grad3XZBeforeY[i % grad3XZBeforeY.length];
 		}
 	}
 }
