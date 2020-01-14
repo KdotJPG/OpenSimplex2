@@ -1,5 +1,5 @@
 /*
- * Noise Demo 2D.
+ * Noise Demo 3D.
  * Replace SuperSimplexNoise with FastSimplexStyleNoise to demo FastSimplexStyleNoise instead.
  */
 
