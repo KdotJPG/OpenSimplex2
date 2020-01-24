@@ -1,4 +1,4 @@
-# "OpenSimplex (2.0)" (SuperSimplex & Fast Simplex-Style Gradient Noise)
+# "OpenSimplex (2.0)" - SuperSimplex & Fast Simplex-Style Gradient Noise
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
