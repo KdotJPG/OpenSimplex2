@@ -37,8 +37,8 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 #### Change Log
 * Slightly reorganized description above, and added TODO/changelog. (Jan 23, 2020)
 * Renamed / additionally named the noise "OpenSimplex (2.0)", separated into two versions/variants. (Jan 23, 2020)
- * SuperSimplex and FastSimplexStyleNoise are very similar to each other algorithmically, and are in the same spirit as the original OpenSimplex.
- * OpenSimplex is used in a lot of projects, and the naming might help facilitate adoption of the new noise in its place.
+  * SuperSimplex and FastSimplexStyleNoise are very similar to each other algorithmically, and are in the same spirit as the original OpenSimplex.
+  * OpenSimplex is used in a lot of projects, and the naming might help facilitate adoption of the new noise in its place.
 * Add C# ports of evaluators. (Jan 13, 2020)
 * Create separate files which include area generators. (Jan 13, 2020)
 * Renamed PlaneFirst evaluators to XYBeforeZ, and added XZBeforeY. (Jan 13, 2020)
