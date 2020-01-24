@@ -8,7 +8,7 @@ Successors to OpenSimplex Noise, plus updated OpenSimplex.
 
 * The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, and perform similar to or faster than the average.
 
-* All functions use new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
+* All functions are given new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
 
 The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradient-Noise/tree/master/java/areagen) offer speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (i.e. they don't use a "range")
 
