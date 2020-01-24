@@ -1,16 +1,20 @@
-# SuperSimplex & Fast Simplex-Style Gradient Noise
+# "OpenSimplex 2.0" (SuperSimplex & Fast Simplex-Style Gradient Noise)
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex.
 
-The provided 3D function in **SuperSimplexNoise** is about as fast as optimized OpenSimplex, but has better uniformity.
+* The provided 3D function in **SuperSimplexNoise** ("OpenSimplex 2.0", smooth version) is about as fast as optimized OpenSimplex, but has better uniformity.
 
-The provided 3D function in **FastSimplexStyleNoise** is about as fast as common Simplex noise implementations, but uses a much different process.
+* The provided 3D function in **FastSimplexStyleNoise** ("OpenSimplex 2.0", faster version) is about as fast as common Simplex noise implementations, but uses a much different process.
 
-Both 2D functions are similar to or faster than the average.
+* The 2D functions aren't intended to represent new developments in the same way that the 3D functions do. They are just the logical pairings to go along with the 3D functions. Both 2D functions are implemented using lookup tables, and perform similar to or faster than the average.
 
-All functions also include speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (i.e. they don't use a "range")
+* All functions use new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
 
-All functions use new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
+The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradient-Noise/tree/master/java/areagen) offer speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (i.e. they don't use a "range")
+
+* The only differences between the two versions's area generators are: **radius parameter** and **normalization constant**.
+  * The radius can be straightforwardly reduced for faster noise, or increased for smoother noise. There are no geometric traversal steps to cause discontinuities, and no hardcoded point computations to limit performance increases, as would be the case with varying the radius in the evaluators.
+  * The normalization constant is baked into the same gradient set as the evaluator. It can be recomputed using [Noise Normalizer](https://github.com/KdotJPG/NoiseNormalizer). If left as is, the noise will still function correctly, it will just have a different output range.
 
 Includes 2D and 3D noise. 4D noise is coming!
 
