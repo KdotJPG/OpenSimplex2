@@ -1,5 +1,5 @@
 /**
- * K.jpg's SuperSimplex noise. Uses large kernels for smooth results.
+ * K.jpg's SuperSimplex noise ("OpenSimplex (2.0), smooth version").
  *
  * - 2D is standard simplex implemented using a lookup table.
  * - 3D is "Re-oriented 4-point BCC noise" which constructs an
