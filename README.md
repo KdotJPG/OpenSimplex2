@@ -1,6 +1,6 @@
 # "OpenSimplex 2.0" (SuperSimplex & Fast Simplex-Style Gradient Noise)
 
-Successors to OpenSimplex Noise, plus updated OpenSimplex.
+Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
 * The provided 3D function in **SuperSimplexNoise** ("OpenSimplex 2.0", smooth version) is about as fast as optimized OpenSimplex, but has better uniformity.
 
@@ -16,7 +16,23 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
   * The radius can be straightforwardly reduced for faster noise, or increased for smoother noise. There are no geometric traversal steps to cause discontinuities, and no hardcoded point computations to limit performance increases, as would be the case with varying the radius in the evaluators.
   * The normalization constant is baked into the same gradient set as the evaluator. It can be recomputed using [Noise Normalizer](https://github.com/KdotJPG/NoiseNormalizer). If left as is, the noise will still function correctly, it will just have a different output range.
 
-Includes 2D and 3D noise. 4D noise is coming!
+#### TODO:
+
+* 4D noise
+* More language ports
+* Consolidate render tiles in readme into fewer images
+* Move radius into unified constant
+
+#### Maybe TODO:
+
+* Create combined FastSimplexStyleNoise and SuperSimplexNoise in one file, reducing repetition for someone who needs both.
+* Include octave summation, ridged noise, etc.
+* Exponentially-distributed noise ([source of idea](http://jcgt.org/published/0004/02/01/))
+* Simultaneous multi-instance evaluation
+* Disc/Ball-output noise (Outputs 2D/3D/etc. vector for more directionally-uniform domain warping)
+* Tileable 2D noise (slightly mis-skewed triangular grid which repeats properly over a desired rectangle)
+* Tileable 3D noise (using an extension of the above)
+* Tileable 3D noise (exact, using the "classic" lattice orientation)
 
 
 ## Renders
