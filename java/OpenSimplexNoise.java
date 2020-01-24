@@ -1,5 +1,5 @@
 /**
- * K.jpg's OpenSimplex Noise 
+ * K.jpg's OpenSimplex Noise (Original OpenSimplex, but with updated gradient sets).
  * DigitalShadow's optimized implementation. https://gist.github.com/digitalshadow/134a3a02b67cecd72181/
  * Gradients updated by K.jpg (Dec 2019) and ported back to Java
  *
