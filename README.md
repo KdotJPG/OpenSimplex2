@@ -1,10 +1,10 @@
-## OpenSimplex (2.0) - SuperSimplex & Fast Simplex-Style Gradient Noise
+## OpenSimplex 2 - SuperSimplex & Fast Simplex-Style Gradient Noise
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
-* The provided 3D function in **SuperSimplexNoise** ("OpenSimplex (2.0)", smooth version) is about as fast as optimized OpenSimplex, but has better uniformity.
+* The provided 3D function in **SuperSimplexNoise** ("OpenSimplex 2, smooth version") is about as fast as optimized OpenSimplex, but has better uniformity.
 
-* The provided 3D function in **FastSimplexStyleNoise** ("OpenSimplex (2.0)", faster version) is about as fast as common Simplex noise implementations, but uses a much different process.
+* The provided 3D function in **FastSimplexStyleNoise** ("OpenSimplex 2, faster version") is about as fast as common Simplex noise implementations, but uses a much different process.
 
 * The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, and perform similar to or faster than the average.
 
