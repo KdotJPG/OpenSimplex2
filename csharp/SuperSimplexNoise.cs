@@ -1,5 +1,5 @@
 ﻿/**
- * K.jpg's SuperSimplex noise. Uses large kernels for smooth results.
+ * K.jpg's SuperSimplex noise ("OpenSimplex 2, faster version").
  *
  * - 2D is standard simplex, modified to support larger kernels.
  *   Implemented using a lookup table.
