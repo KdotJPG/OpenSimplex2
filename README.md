@@ -22,6 +22,7 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * More language ports
 * Consolidate render tiles in readme into fewer images
 * Move radius into unified constant
+* Test 24-gon instead of 12-gon for 2D gradient set, and replace if results nicer.
 
 #### Maybe TODO:
 
