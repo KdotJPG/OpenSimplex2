@@ -14,7 +14,7 @@ Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D no
 
 The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradient-Noise/tree/master/java/areagen) offer speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (i.e. they don't use a "range")
 
-* The only differences between the two versions's area generators are: **radius parameter** and **normalization constant**.
+* The only differences between the two versions' area generators are: **radius parameter** and **normalization constant**.
   * The radius can be straightforwardly reduced for faster noise, or increased for smoother noise. There are no geometric traversal steps to cause discontinuities, and no hardcoded point computations to limit performance increases, as would be the case with varying the radius in the evaluators.
   * The normalization constant is baked into the same gradient set as the evaluator. It can be recomputed using [Noise Normalizer](https://github.com/KdotJPG/NoiseNormalizer). If left as is, the noise will still function correctly, it will just have a different output range.
 
@@ -22,7 +22,6 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 * 4D noise
 * More language ports
-* Consolidate render tiles in readme into fewer images
 * Move radius into unified constant
 * Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
 
