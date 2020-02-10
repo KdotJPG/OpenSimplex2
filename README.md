@@ -24,7 +24,6 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * More language ports
 * Consolidate render tiles in readme into fewer images
 * Move radius into unified constant
-* Test 24-gon instead of 12-gon for 2D gradient set, and replace if results nicer.
 * Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
 
 #### Maybe TODO:
@@ -53,79 +52,35 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 ## Renders
 
-### OpenSimplex2S, 2D
+### 2D Noise
 
-![OpenSimplex2S, 2D](images/ssn2.png?raw=true)
+![Renders 2D](images/renders2D.png?raw=true)
 
-### OpenSimplex2F, 2D
+* OpenSimplex2S is a smoother copy of OpenSimplex2F.
+* OpenSimplex2S and Updated OpenSimplex are effectively identical.
+* Original OpenSimplex produced more straight parts and was not probabilistically lattice-symmetric.
 
-![OpenSimplex2F, 2D](images/fssn2.png?raw=true)
+### 3D Noise (XYBeforeZ Orientation)
 
-### Updated OpenSimplexNoise, 2D
+![Renders 3D XYBeforeZ](images/renders3Dpf.png?raw=true)
 
-![OpenSimplex2S, 3D (Classic, 2D slice)](images/osn2.png?raw=true)
+* OpenSimplex2F and OpenSimplex2S, 2D slices of 3D XYBeforeZ, keep mostly the same properties as you move along the third axis.
+* Updated OpenSimplex looks good in both slices, but the slices look different from each other. In an animation, this is particularly noticeable.
+* Original OpenSimplex was less uniform and not probabilistically lattice-symmetric.
 
----
+### 3D Noise (Classic Orientation)
 
-### OpenSimplex2S, 3D (Classic, 2D slice)
+![Renders 3D Classic](images/renders3Dc.png?raw=true)
 
-![Updated OpenSimplexNoise, 2D](images/ssn3c.png?raw=true)
+* OpenSimplex2F and OpenSimplex2S, 2D slices of 3D in the classic lattice orientation, look decent but are less optimized for X/Y planes being the primary focus.
+* This Updated OpenSimplex render shows less directional bias than original OpenSimplex.
 
-### OpenSimplex2F, 3D (Classic, 2D slice)
+### 4D OpenSimplex
 
-![OpenSimplex2F, 3D (Classic, 2D slice)](images/fssn3c.png?raw=true)
+![OpenSimplexRenders 4D](images/rendersOSN4D.png?raw=true)
 
-### Updated OpenSimplexNoise, 3D (Classic, 2D slice)
-
-![Updated OpenSimplexNoise, 3D (Classic, 2D slice)](images/osn3c.png?raw=true)
-
----
-
-### OpenSimplex2S, 3D (XYBeforeZ, 2D slice)
-
-![OpenSimplex2S, 3D (XYBeforeZ, 2D slice)](images/ssn3pf.png?raw=true)
-
-### OpenSimplex2F, 3D (XYBeforeZ, 2D slice)
-
-![OpenSimplex2F, 3D (XYBeforeZ, 2D slice)](images/fssn3pf.png?raw=true)
-
-### Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slices)
-
-![Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slice at z=0.0)](images/osn3pfa.png?raw=true)
-
-![Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slice at z=0.5)](images/osn3pfb.png?raw=true)
-
----
-
-### Updated OpenSimplex, 4D (2D slice)
-
-![Updated OpenSimplex, 4D (2D slice)](images/osn4.png?raw=true)
-
-
-## Performance Metrics
-
-### SuperSimplex vs OpenSimplex (2D)
-
-![2D Metrics OpenSimplex2S](images/metrics_ssn2.png?raw=true)
-
-It would appear that the older 2D OpenSimplex comes out ahead of the refactored version. But DigitalShadow's 3D and especially 4D refactorings come out ahead. The results may have been different had I tested in the original C# language of the refactored version, rather than Java.
-
-### OpenSimplex2F vs others (2D)
-
-![2D Metrics OpenSimplex2F](images/metrics_fssn2.png?raw=true)
-
-### SuperSimplex vs OpenSimplex (3D)
-
-![3D Metrics OpenSimplex2S](images/metrics_ssn3.png?raw=true)
-
-### OpenSimplex2F vs others (3D)
-
-![3D Metrics OpenSimplex2F](images/metrics_fssn3.png?raw=true)
-
-### OpenSimplex legacy vs DigitalShadow's refactor (4D)
-
-![4D Metrics OpenSimplexNoise](images/metrics_osn4.png?raw=true)
-
+* Updated OpenSimplex 4D appears to have, to a small degree, less waviness inconsistency down the main diagonal.
+* It would be interesting to create a noise4_XYBeforeZW and compare the result.
 
 ## Public Domain Dedication
 

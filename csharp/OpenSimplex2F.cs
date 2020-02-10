@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace Noise
 {
-    public class FastSimplexStyleNoise
+    public class OpenSimplex2F
     {
         private const int PSIZE = 2048;
         private const int PMASK = 2047;
@@ -22,7 +22,7 @@ namespace Noise
         private Grad2[] permGrad2;
         private Grad3[] permGrad3;
 
-        public FastSimplexStyleNoise(long seed)
+        public OpenSimplex2F(long seed)
         {
             perm = new short[PSIZE];
             permGrad2 = new Grad2[PSIZE];
@@ -243,7 +243,7 @@ namespace Noise
         private static Grad2[] GRADIENTS_2D;
         private static Grad3[] GRADIENTS_3D;
 
-        static FastSimplexStyleNoise() {
+        static OpenSimplex2F() {
             LOOKUP_2D = new LatticePoint2D[2 * 3];
             LOOKUP_3D = new LatticePoint3D[8];
         
