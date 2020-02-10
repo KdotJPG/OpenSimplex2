@@ -1,8 +1,10 @@
 /**
- * K.jpg's Fast Simplex-Style noise ("OpenSimplex (2.0), faster version").
+ * K.jpg's OpenSimplex 2, smooth variant ("SuperSimplex")
+ * With area generators.
  *
- * - 2D is standard simplex implemented using a lookup table.
- * - 3D is "Re-oriented 4-point BCC noise" which constructs an
+ * - 2D is standard simplex, modified to support larger kernels.
+ *   Implemented using a lookup table.
+ * - 3D is "Re-oriented 8-point BCC noise" which constructs an
  *   isomorphic BCC lattice in a much different way than usual.
  *
  * Multiple versions of each function are provided. See the
@@ -13,7 +15,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.HashSet;
 
-public class FastSimplexStyleNoise {
+public class OpenSimplex2S {
 	
 	private static final int PSIZE = 2048;
 	private static final int PMASK = 2047;
@@ -22,7 +24,7 @@ public class FastSimplexStyleNoise {
 	private Grad2[] permGrad2;
 	private Grad3[] permGrad3;
 
-	public FastSimplexStyleNoise(long seed) {
+	public OpenSimplex2S(long seed) {
 		perm = new short[PSIZE];
 		permGrad2 = new Grad2[PSIZE];
 		permGrad3 = new Grad3[PSIZE];
@@ -46,7 +48,7 @@ public class FastSimplexStyleNoise {
 	 */
 	
 	/**
-	 * 2D Simplex noise, standard lattice orientation.
+	 * 2D SuperSimplex noise, standard lattice orientation.
 	 */
 	public double noise2(double x, double y) {
 		
@@ -58,7 +60,7 @@ public class FastSimplexStyleNoise {
 	}
 	
 	/**
-	 * 2D Simplex noise, with Y pointing down the main diagonal.
+	 * 2D SuperSimplex noise, with Y pointing down the main diagonal.
 	 * Might be better for a 2D sandbox style game, where Y is vertical.
 	 * Probably slightly less optimal for heightmaps or continent maps.
 	 */
@@ -72,7 +74,7 @@ public class FastSimplexStyleNoise {
 	}
 	
 	/**
-	 * 2D Simplex noise base.
+	 * 2D SuperSimplex noise base.
 	 * Lookup table implementation inspired by DigitalShadow.
 	 */
 	private double noise2_Base(double xs, double ys) {
@@ -83,17 +85,21 @@ public class FastSimplexStyleNoise {
 		double xsi = xs - xsb, ysi = ys - ysb;
 		
 		// Index to point list
-		int index = (int)((ysi - xsi) / 2 + 1) * 3;
+		int a = (int)(xsi + ysi);
+		int index =
+			(a << 2) |
+			(int)(xsi - ysi / 2 + 1 - a / 2.0) << 3 |
+			(int)(ysi - xsi / 2 + 1 - a / 2.0) << 4;
 		
 		double ssi = (xsi + ysi) * -0.211324865405187;
 		double xi = xsi + ssi, yi = ysi + ssi;
 
 		// Point contributions
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			LatticePoint2D c = LOOKUP_2D[index + i];
 
 			double dx = xi + c.dx, dy = yi + c.dy;
-			double attn = 0.5 - dx * dx - dy * dy;
+			double attn = 2.0 / 3.0 - dx * dx - dy * dy;
 			if (attn <= 0) continue;
 
 			int pxm = (xsb + c.xsv) & PMASK, pym = (ysb + c.ysv) & PMASK;
@@ -108,8 +114,9 @@ public class FastSimplexStyleNoise {
 	}
 	
 	/**
-	 * 3D Re-oriented 4-point BCC noise, classic orientation.
-	 * Proper substitute for 3D Simplex in light of Forbidden Formulae.
+	 * 3D Re-oriented 8-point BCC noise, classic orientation
+	 * Proper substitute for what 3D SuperSimplex would be,
+	 * in light of Forbidden Formulae.
 	 * Use noise3_XYBeforeZ or noise3_XZBeforeY instead, wherever appropriate.
 	 */
 	public double noise3_Classic(double x, double y, double z) {
@@ -125,7 +132,7 @@ public class FastSimplexStyleNoise {
 	}
 	
 	/**
-	 * 3D Re-oriented 4-point BCC noise, with better visual isotropy in (X, Y).
+	 * 3D Re-oriented 8-point BCC noise, with better visual isotropy in (X, Y).
 	 * Recommended for 3D terrain and time-varied animations.
 	 * The Z coordinate should always be the "different" coordinate in your use case.
 	 * If Y is vertical in world coordinates, call noise3_XYBeforeZ(x, z, Y) or use noise3_XZBeforeY.
@@ -147,7 +154,7 @@ public class FastSimplexStyleNoise {
 	}
 	
 	/**
-	 * 3D Re-oriented 4-point BCC noise, with better visual isotropy in (X, Z).
+	 * 3D Re-oriented 8-point BCC noise, with better visual isotropy in (X, Z).
 	 * Recommended for 3D terrain and time-varied animations.
 	 * The Y coordinate should always be the "different" coordinate in your use case.
 	 * If Y is vertical in world coordinates, call noise3_XZBeforeY(x, Y, z).
@@ -172,7 +179,7 @@ public class FastSimplexStyleNoise {
 	 * Generate overlapping cubic lattices for 3D Re-oriented BCC noise.
 	 * Lookup table implementation inspired by DigitalShadow.
 	 * It was actually faster to narrow down the points in the loop itself,
-	 * than to build up the index with enough info to isolate 4 points.
+	 * than to build up the index with enough info to isolate 8 points.
 	 */
 	private double noise3_BCC(double xr, double yr, double zr) {
 		
@@ -190,7 +197,7 @@ public class FastSimplexStyleNoise {
 		LatticePoint3D c = LOOKUP_3D[index];
 		while (c != null) {
 			double dxr = xri + c.dxr, dyr = yri + c.dyr, dzr = zri + c.dzr;
-			double attn = 0.5 - dxr * dxr - dyr * dyr - dzr * dzr;
+			double attn = 0.75 - dxr * dxr - dyr * dyr - dzr * dzr;
 			if (attn < 0) {
 				c = c.nextOnFailure;
 			} else {
@@ -450,16 +457,22 @@ public class FastSimplexStyleNoise {
 	private static final LatticePoint2D[] LOOKUP_2D;
 	private static final LatticePoint3D[] LOOKUP_3D;
 	static {
-		LOOKUP_2D = new LatticePoint2D[2 * 3];
+		LOOKUP_2D = new LatticePoint2D[8 * 4];
 		LOOKUP_3D = new LatticePoint3D[8];
 		
-		for (int i = 0; i < 2; i++) {
-			int i1, j1;
-			if ((i & 1) == 0) { i1 = 1; j1 = 0; }
-			else { i1 = 0; j1 = 1; }
-			LOOKUP_2D[i * 3 + 0] = new LatticePoint2D(0, 0);
-			LOOKUP_2D[i * 3 + 1] = new LatticePoint2D(1, 1);
-			LOOKUP_2D[i * 3 + 2] = new LatticePoint2D(i1, j1);
+		for (int i = 0; i < 8; i++) {
+			int i1, j1, i2, j2;
+			if ((i & 1) == 0) {
+				if ((i & 2) == 0) { i1 = -1; j1 = 0; } else { i1 = 1; j1 = 0; }
+				if ((i & 4) == 0) { i2 = 0; j2 = -1; } else { i2 = 0; j2 = 1; }
+			} else {
+				if ((i & 2) != 0) { i1 = 2; j1 = 1; } else { i1 = 0; j1 = 1; }
+				if ((i & 4) != 0) { i2 = 1; j2 = 2; } else { i2 = 1; j2 = 0; }
+			}
+			LOOKUP_2D[i * 4 + 0] = new LatticePoint2D(0, 0);
+			LOOKUP_2D[i * 4 + 1] = new LatticePoint2D(1, 1);
+			LOOKUP_2D[i * 4 + 2] = new LatticePoint2D(i1, j1);
+			LOOKUP_2D[i * 4 + 3] = new LatticePoint2D(i2, j2);
 		}
 		
 		for (int i = 0; i < 8; i++) {
@@ -471,32 +484,60 @@ public class FastSimplexStyleNoise {
 			LatticePoint3D c0 = new LatticePoint3D(i1, j1, k1, 0);
 			LatticePoint3D c1 = new LatticePoint3D(i1 + i2, j1 + j2, k1 + k2, 1);
 			
-			// Each single step away on the first half-lattice.
+			// (1, 0, 0) vs (0, 1, 1) away from octant.
 			LatticePoint3D c2 = new LatticePoint3D(i1 ^ 1, j1, k1, 0);
-			LatticePoint3D c3 = new LatticePoint3D(i1, j1 ^ 1, k1, 0);
-			LatticePoint3D c4 = new LatticePoint3D(i1, j1, k1 ^ 1, 0);
+			LatticePoint3D c3 = new LatticePoint3D(i1, j1 ^ 1, k1 ^ 1, 0);
 			
-			// Each single step away on the second half-lattice.
-			LatticePoint3D c5 = new LatticePoint3D(i1 + (i2 ^ 1), j1 + j2, k1 + k2, 1);
-			LatticePoint3D c6 = new LatticePoint3D(i1 + i2, j1 + (j2 ^ 1), k1 + k2, 1);
-			LatticePoint3D c7 = new LatticePoint3D(i1 + i2, j1 + j2, k1 + (k2 ^ 1), 1);
+			// (1, 0, 0) vs (0, 1, 1) away from octant, on second half-lattice.
+			LatticePoint3D c4 = new LatticePoint3D(i1 + (i2 ^ 1), j1 + j2, k1 + k2, 1);
+			LatticePoint3D c5 = new LatticePoint3D(i1 + i2, j1 + (j2 ^ 1), k1 + (k2 ^ 1), 1);
 			
-			// First two are guaranteed.
+			// (0, 1, 0) vs (1, 0, 1) away from octant.
+			LatticePoint3D c6 = new LatticePoint3D(i1, j1 ^ 1, k1, 0);
+			LatticePoint3D c7 = new LatticePoint3D(i1 ^ 1, j1, k1 ^ 1, 0);
+			
+			// (0, 1, 0) vs (1, 0, 1) away from octant, on second half-lattice.
+			LatticePoint3D c8 = new LatticePoint3D(i1 + i2, j1 + (j2 ^ 1), k1 + k2, 1);
+			LatticePoint3D c9 = new LatticePoint3D(i1 + (i2 ^ 1), j1 + j2, k1 + (k2 ^ 1), 1);
+			
+			// (0, 0, 1) vs (1, 1, 0) away from octant.
+			LatticePoint3D cA = new LatticePoint3D(i1, j1, k1 ^ 1, 0);
+			LatticePoint3D cB = new LatticePoint3D(i1 ^ 1, j1 ^ 1, k1, 0);
+			
+			// (0, 0, 1) vs (1, 1, 0) away from octant, on second half-lattice.
+			LatticePoint3D cC = new LatticePoint3D(i1 + i2, j1 + j2, k1 + (k2 ^ 1), 1);
+			LatticePoint3D cD = new LatticePoint3D(i1 + (i2 ^ 1), j1 + (j2 ^ 1), k1 + k2, 1);
+			
+			// First two points are guaranteed.
 			c0.nextOnFailure = c0.nextOnSuccess = c1;
 			c1.nextOnFailure = c1.nextOnSuccess = c2;
 			
-			// Once we find one on the first half-lattice, the rest are out.
-			// In addition, knowing c2 rules out c5.
-			c2.nextOnFailure = c3; c2.nextOnSuccess = c6;
-			c3.nextOnFailure = c4; c3.nextOnSuccess = c5;
-			c4.nextOnFailure = c4.nextOnSuccess = c5;
+			// If c2 is in range, then we know c3 and c4 are not.
+			c2.nextOnFailure = c3; c2.nextOnSuccess = c5;
+			c3.nextOnFailure = c4; c3.nextOnSuccess = c4;
 			
-			// Once we find one on the second half-lattice, the rest are out.
-			c5.nextOnFailure = c6; c5.nextOnSuccess = null;
-			c6.nextOnFailure = c7; c6.nextOnSuccess = null;
-			c7.nextOnFailure = c7.nextOnSuccess = null;
+			// If c4 is in range, then we know c5 is not.
+			c4.nextOnFailure = c5; c4.nextOnSuccess = c6;
+			c5.nextOnFailure = c5.nextOnSuccess = c6;
+			
+			// If c6 is in range, then we know c7 and c8 are not.
+			c6.nextOnFailure = c7; c6.nextOnSuccess = c9;
+			c7.nextOnFailure = c8; c7.nextOnSuccess = c8;
+			
+			// If c8 is in range, then we know c9 is not.
+			c8.nextOnFailure = c9; c8.nextOnSuccess = cA;
+			c9.nextOnFailure = c9.nextOnSuccess = cA;
+			
+			// If cA is in range, then we know cB and cC are not.
+			cA.nextOnFailure = cB; cA.nextOnSuccess = cD;
+			cB.nextOnFailure = cC; cB.nextOnSuccess = cC;
+			
+			// If cC is in range, then we know cD is not.
+			cC.nextOnFailure = cD; cC.nextOnSuccess = null;
+			cD.nextOnFailure = cD.nextOnSuccess = null;
 			
 			LOOKUP_3D[i] = c0;
+			
 		}
 	}
 	
@@ -613,8 +654,8 @@ public class FastSimplexStyleNoise {
 			this.xFrequencyInverse = 1.0 / xFrequency;
 			this.yFrequencyInverse = 1.0 / yFrequency;
 			
-			double preciseScaledRadiusX = Math.sqrt(0.5) * xFrequencyInverse;
-			double preciseScaledRadiusY = Math.sqrt(0.5) * yFrequencyInverse;
+			double preciseScaledRadiusX = Math.sqrt(2.0 / 3.0) * xFrequencyInverse;
+			double preciseScaledRadiusY = Math.sqrt(2.0 / 3.0) * yFrequencyInverse;
 			
 			// 0.25 because we offset center by 0.5
 			this.scaledRadiusX = (int)Math.ceil(preciseScaledRadiusX + 0.25);
@@ -638,7 +679,7 @@ public class FastSimplexStyleNoise {
 					for (int xx = 0; xx < scaledRadiusX * 2; xx++) {
 						double dx = (xx + 0.5 - scaledRadiusX) * xFrequency;
 						double dy = (yy + 0.5 - scaledRadiusY) * yFrequency;
-						double attn = 0.5 - dx * dx - dy * dy;
+						double attn = (2.0 / 3.0) - dx * dx - dy * dy;
 						if (attn > 0) {
 							attn *= attn;
 							kernel[yy][xx] = attn * attn * amplitude;
@@ -678,9 +719,9 @@ public class FastSimplexStyleNoise {
 			this.yFrequencyInverse = 1.0 / yFrequency;
 			this.zFrequencyInverse = 1.0 / zFrequency;
 			
-			double preciseScaledRadiusX = Math.sqrt(0.5) * xFrequencyInverse;
-			double preciseScaledRadiusY = Math.sqrt(0.5) * yFrequencyInverse;
-			double preciseScaledRadiusZ = Math.sqrt(0.5) * zFrequencyInverse;
+			double preciseScaledRadiusX = Math.sqrt(0.75) * xFrequencyInverse;
+			double preciseScaledRadiusY = Math.sqrt(0.75) * yFrequencyInverse;
+			double preciseScaledRadiusZ = Math.sqrt(0.75) * zFrequencyInverse;
 			
 			// 0.25 because we offset center by 0.5
 			this.scaledRadiusX = (int)Math.ceil(preciseScaledRadiusX + 0.25);
@@ -724,7 +765,7 @@ public class FastSimplexStyleNoise {
 								double dx = (xx + 0.5 - scaledRadiusX) * xFrequency;
 								double dy = (yy + 0.5 - scaledRadiusY) * yFrequency;
 								double dz = (zz + 0.5 - scaledRadiusZ) * zFrequency;
-								double attn = 0.5 - dx * dx - dy * dy - dz * dz;
+								double attn = 0.75 - dx * dx - dy * dy - dz * dz;
 								if (attn > 0) {
 									attn *= attn;
 									kernel[zz][yy][xx] = attn * attn * amplitude;
@@ -796,8 +837,8 @@ public class FastSimplexStyleNoise {
 		}
 	}
 	
-	public static final double N2 = 0.009837128628769433;
-	public static final double N3 = 0.030485933181293584;
+	public static final double N2 = 0.05481866495625118;
+	public static final double N3 = 0.2781926117527186;
 	private static final Grad2[] GRADIENTS_2D, GRADIENTS_2D_X_BEFORE_Y;
 	private static final Grad3[] GRADIENTS_3D, GRADIENTS_3D_CLASSIC, GRADIENTS_3D_XY_BEFORE_Z, GRADIENTS_3D_XZ_BEFORE_Y;
 	static {
@@ -805,18 +846,30 @@ public class FastSimplexStyleNoise {
 		GRADIENTS_2D = new Grad2[PSIZE];
 		GRADIENTS_2D_X_BEFORE_Y = new Grad2[PSIZE];
 		Grad2[] grad2 = {
-			new Grad2(                0.0,                 1.0),
-			new Grad2(                0.5,  0.8660254037844387),
-			new Grad2( 0.8660254037844387,                 0.5),
-			new Grad2(                1.0,                 0.0),
-			new Grad2( 0.8660254037844387,                -0.5),
-			new Grad2(                0.5, -0.8660254037844387),
-			new Grad2(                0.0,                -1.0),
-			new Grad2(               -0.5, -0.8660254037844387),
-			new Grad2(-0.8660254037844387,                -0.5),
-			new Grad2(               -1.0,                 0.0),
-			new Grad2(-0.8660254037844387,                 0.5),
-			new Grad2(               -0.5,  0.8660254037844387)
+			new Grad2( 0.130526192220052,  0.99144486137381),
+			new Grad2( 0.38268343236509,   0.923879532511287),
+			new Grad2( 0.608761429008721,  0.793353340291235),
+			new Grad2( 0.793353340291235,  0.608761429008721),
+			new Grad2( 0.923879532511287,  0.38268343236509),
+			new Grad2( 0.99144486137381,   0.130526192220051),
+			new Grad2( 0.99144486137381,  -0.130526192220051),
+			new Grad2( 0.923879532511287, -0.38268343236509),
+			new Grad2( 0.793353340291235, -0.60876142900872),
+			new Grad2( 0.608761429008721, -0.793353340291235),
+			new Grad2( 0.38268343236509,  -0.923879532511287),
+			new Grad2( 0.130526192220052, -0.99144486137381),
+			new Grad2(-0.130526192220052, -0.99144486137381),
+			new Grad2(-0.38268343236509,  -0.923879532511287),
+			new Grad2(-0.608761429008721, -0.793353340291235),
+			new Grad2(-0.793353340291235, -0.608761429008721),
+			new Grad2(-0.923879532511287, -0.38268343236509),
+			new Grad2(-0.99144486137381,  -0.130526192220052),
+			new Grad2(-0.99144486137381,   0.130526192220051),
+			new Grad2(-0.923879532511287,  0.38268343236509),
+			new Grad2(-0.793353340291235,  0.608761429008721),
+			new Grad2(-0.608761429008721,  0.793353340291235),
+			new Grad2(-0.38268343236509,   0.923879532511287),
+			new Grad2(-0.130526192220052,  0.99144486137381)
 		};
 		Grad2[] grad2XBeforeY = new Grad2[grad2.length];
 		for (int i = 0; i < grad2.length; i++) {
@@ -916,3 +969,16 @@ public class FastSimplexStyleNoise {
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

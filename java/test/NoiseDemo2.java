@@ -1,6 +1,6 @@
 /*
  * Noise Demo 2D.
- * Replace SuperSimplexNoise with FastSimplexStyleNoise to demo FastSimplexStyleNoise instead.
+ * Replace OpenSimplex2S with OpenSimplex2F to demo OpenSimplex2F instead.
  */
 
 import java.awt.image.BufferedImage;
@@ -12,10 +12,10 @@ public class NoiseDemo2
 {
 	private static final int WIDTH = 1024;
 	private static final int HEIGHT = 1024;
-	private static final double PERIOD = 128.0;
+	private static final double PERIOD = 64.0;
 	private static final int OFF_X = 2048;
 	private static final int OFF_Y = 2048;
-	private static GenerateType generateType = GenerateType.Evaluator;
+	private static GenerateType generateType = GenerateType.AreaGenerator;
 	
 	private static final double FREQ = 1.0 / PERIOD;
 	
@@ -29,8 +29,8 @@ public class NoiseDemo2
 			throws IOException {
 		
 		// Initialize
-		SuperSimplexNoise noise = new SuperSimplexNoise(1);
-		SuperSimplexNoise.GenerateContext2D noiseBulk = new SuperSimplexNoise.GenerateContext2D(SuperSimplexNoise.LatticeOrientation2D.Standard, FREQ, FREQ, 1.0);
+		OpenSimplex2S noise = new OpenSimplex2S(1234);
+		OpenSimplex2S.GenerateContext2D noiseBulk = new OpenSimplex2S.GenerateContext2D(OpenSimplex2S.LatticeOrientation2D.Standard, FREQ, FREQ, 1.0);
 		
 		// Generate
 		double[][] buffer = new double[HEIGHT][WIDTH];

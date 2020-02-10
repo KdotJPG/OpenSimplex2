@@ -20,7 +20,7 @@ class NoiseMetrics4_OSN {
 		
 		noiseTimers.add(new NoiseTimer() {
 			{ name = "DigitalShadow's Optimized OpenSimplex Noise 4D"; }
-			OpenSimplexNoise noise = new OpenSimplexNoise(0);
+			OpenSimplex noise = new OpenSimplex(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -36,7 +36,7 @@ class NoiseMetrics4_OSN {
 		
 		noiseTimers.add(new NoiseTimer() {
 			{ name = "Legacy OpenSimplex Noise 4D"; }
-			OpenSimplexOld noise = new OpenSimplexOld(0);
+			OpenSimplexUnoptimized noise = new OpenSimplexUnoptimized(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];

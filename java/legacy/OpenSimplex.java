@@ -1,19 +1,16 @@
 /**
- * K.jpg's OpenSimplex Noise (Original OpenSimplex, but with updated gradient sets).
- * DigitalShadow's optimized implementation. https://gist.github.com/digitalshadow/134a3a02b67cecd72181/
- * Gradients updated by K.jpg (Dec 2019) and ported back to Java
+ * K.jpg's original OpenSimplex Noise
+ * DigitalShadow's optimized implementation, https://gist.github.com/digitalshadow/134a3a02b67cecd72181/
+ * with updated gradient sets (Dec 2019, Feb 2020)
  *
- * If 4D noise is not needed, is recommended to use SuperSimplex instead.
- * 4D SuperSimplex will come.
+ * If 4D noise is not needed, is recommended to use OpenSimplex2 instead.
+ * Choose OpenSimplex2S for comparable smoothness, or choose OpenSimplex2F for speed.
+ * If 4D noise is needed, 4D OpenSimplex2 will come, but this can suffice.
  *
- * A PlaneFirst 3D evaluator has been added, but the results aren't quite as good as
- * they are in SuperSimplex noise.
- * 
- * @author DigitalShadow
- * @author K.jpg
+ * XYBeforeZ and XZBeforeY functions for 3D have been added, though they aren't as nice as in OpenSimplex2
  */
 
-public class OpenSimplexNoise
+public class OpenSimplex
 {
 	private static final double STRETCH_2D = -0.211324865405187;    // (1/Math.sqrt(2+1)-1)/2;
 	private static final double STRETCH_3D = -1.0 / 6.0;            // (1/Math.sqrt(3+1)-1)/3;
@@ -29,7 +26,7 @@ public class OpenSimplexNoise
 	private Grad3[] permGrad3;
 	private Grad4[] permGrad4;
 
-	public OpenSimplexNoise(long seed) {
+	public OpenSimplex(long seed) {
 		perm = new short[PSIZE];
 		permGrad2 = new Grad2[PSIZE];
 		permGrad3 = new Grad3[PSIZE];
@@ -105,21 +102,34 @@ public class OpenSimplexNoise
 		
 		return eval3_Base(xs, ys, zs);
 	}
-	
-	// Not as good as in SuperSimplex, since there are more visible differences between different slices.
-	// The third coordinate should always be the "different" coordinate in your use case.
-	public double eval3_PlaneFirst(double x, double y, double t) {
-		
+
+	// Not as good as in SuperSimplex/OpenSimplex2S, since there are more visible differences between different slices.
+	// The Z coordinate should always be the "different" coordinate in your use case.
+	public double eval3_XYBeforeZ(double x, double y, double z)
+	{
 		// Combine rotation with skew transform.
 		double xy = x + y;
 		double s2 = xy * 0.211324865405187;
-		double zz = t * 0.288675134594813;
+		double zz = z * 0.288675134594813;
 		double xs = s2 - x + zz, ys = s2 - y + zz;
 		double zs = xy * 0.577350269189626 + zz;
-		
+
 		return eval3_Base(xs, ys, zs);
 	}
 
+	// Similar to the above, except the Y coordinate should always be the "different" coordinate in your use case.
+	public double eval3_XZBeforeY(double x, double y, double z)
+	{
+		// Combine rotation with skew transform.
+		double xz = x + z;
+		double s2 = xz * 0.211324865405187;
+		double yy = y * 0.288675134594813;
+		double xs = s2 - x + yy, zs = s2 - z + yy;
+		double ys = xz * 0.577350269189626 + yy;
+
+		return eval3_Base(xs, ys, zs);
+	}
+	
 	private double eval3_Base(double xs, double ys, double zs) {
 		int xsb = fastFloor(xs);
 		int ysb = fastFloor(ys);
@@ -328,25 +338,37 @@ public class OpenSimplexNoise
 	private static Contribution3[] LOOKUP_3D;
 	private static Contribution4[] LOOKUP_4D;
 	
-	private static final double N2 = 7.550972672242173;
+	private static final double N2 = 7.69084574549313;
 	private static final double N3 = 26.92263139946168;
 	private static final double N4 = 8.881759591352166;
 
 	static {
 		GRADIENTS_2D = new Grad2[PSIZE];
 		Grad2[] grad2 = {
-			new Grad2(                0.0,                 1.0),
-			new Grad2(                0.5,  0.8660254037844387),
-			new Grad2( 0.8660254037844387,                 0.5),
-			new Grad2(                1.0,                 0.0),
-			new Grad2( 0.8660254037844387,                -0.5),
-			new Grad2(                0.5, -0.8660254037844387),
-			new Grad2(                0.0,                -1.0),
-			new Grad2(               -0.5, -0.8660254037844387),
-			new Grad2(-0.8660254037844387,                -0.5),
-			new Grad2(               -1.0,                 0.0),
-			new Grad2(-0.8660254037844387,                 0.5),
-			new Grad2(               -0.5,  0.8660254037844387)
+			new Grad2( 0.130526192220052,  0.99144486137381),
+			new Grad2( 0.38268343236509,   0.923879532511287),
+			new Grad2( 0.608761429008721,  0.793353340291235),
+			new Grad2( 0.793353340291235,  0.608761429008721),
+			new Grad2( 0.923879532511287,  0.38268343236509),
+			new Grad2( 0.99144486137381,   0.130526192220051),
+			new Grad2( 0.99144486137381,  -0.130526192220051),
+			new Grad2( 0.923879532511287, -0.38268343236509),
+			new Grad2( 0.793353340291235, -0.60876142900872),
+			new Grad2( 0.608761429008721, -0.793353340291235),
+			new Grad2( 0.38268343236509,  -0.923879532511287),
+			new Grad2( 0.130526192220052, -0.99144486137381),
+			new Grad2(-0.130526192220052, -0.99144486137381),
+			new Grad2(-0.38268343236509,  -0.923879532511287),
+			new Grad2(-0.608761429008721, -0.793353340291235),
+			new Grad2(-0.793353340291235, -0.608761429008721),
+			new Grad2(-0.923879532511287, -0.38268343236509),
+			new Grad2(-0.99144486137381,  -0.130526192220052),
+			new Grad2(-0.99144486137381,   0.130526192220051),
+			new Grad2(-0.923879532511287,  0.38268343236509),
+			new Grad2(-0.793353340291235,  0.608761429008721),
+			new Grad2(-0.608761429008721,  0.793353340291235),
+			new Grad2(-0.38268343236509,   0.923879532511287),
+			new Grad2(-0.130526192220052,  0.99144486137381)
 		};
 		for (int i = 0; i < grad2.length; i++) {
 			grad2[i].dx /= N2; grad2[i].dy /= N2;

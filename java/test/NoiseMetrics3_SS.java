@@ -19,9 +19,9 @@ class NoiseMetrics3_SS {
 		List<NoiseTimer> noiseTimers = new ArrayList<>();
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Area Generation Classic Orientation"; }
-			SuperSimplexNoise.GenerateContext3D ctx = new SuperSimplexNoise.GenerateContext3D(SuperSimplexNoise.LatticeOrientation3D.Classic, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Area Generation Classic Orientation"; }
+			OpenSimplex2S.GenerateContext3D ctx = new OpenSimplex2S.GenerateContext3D(OpenSimplex2S.LatticeOrientation3D.Classic, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -31,9 +31,9 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Area Generation PlaneFirst Orientation"; }
-			SuperSimplexNoise.GenerateContext3D ctx = new SuperSimplexNoise.GenerateContext3D(SuperSimplexNoise.LatticeOrientation3D.PlaneFirst, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Area Generation PlaneFirst Orientation"; }
+			OpenSimplex2S.GenerateContext3D ctx = new OpenSimplex2S.GenerateContext3D(OpenSimplex2S.LatticeOrientation3D.PlaneFirst, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -43,8 +43,8 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Evaluation Classic Orientation"; }
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Evaluation Classic Orientation"; }
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -59,8 +59,8 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Evaluation PlaneFirst Orientation"; }
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Evaluation PlaneFirst Orientation"; }
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -76,7 +76,7 @@ class NoiseMetrics3_SS {
 		
 		noiseTimers.add(new NoiseTimer() {
 			{ name = "DigitalShadow's Optimized OpenSimplex Noise Classic Orientation"; }
-			OpenSimplexNoise noise = new OpenSimplexNoise(0);
+			OpenSimplex noise = new OpenSimplex(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -91,15 +91,15 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "DigitalShadow's Optimized OpenSimplex Noise PlaneFirst Orientation"; }
-			OpenSimplexNoise noise = new OpenSimplexNoise(0);
+			{ name = "DigitalShadow's Optimized OpenSimplex Noise XZBeforeY Orientation"; }
+			OpenSimplex noise = new OpenSimplex(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
 				for (int z = 0; z < DEPTH; z++) {
 					for (int y = 0; y < HEIGHT; y++) {
 						for (int x = 0; x < WIDTH; x++) {
-							buffer[z][y][x] = noise.eval3_PlaneFirst((x + offX) * NOISE_EVAL_FREQ * 2, (y + offY) * NOISE_EVAL_FREQ * 2, (z + offZ) * NOISE_EVAL_FREQ * 2);
+							buffer[z][y][x] = noise.eval3_XZBeforeY((x + offX) * NOISE_EVAL_FREQ * 2, (y + offY) * NOISE_EVAL_FREQ * 2, (z + offZ) * NOISE_EVAL_FREQ * 2);
 						}
 					}
 				}
@@ -107,8 +107,8 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "Legacy OpenSimplex Noise Classic Orientation"; }
-			OpenSimplexOld noise = new OpenSimplexOld(0);
+			{ name = "Unoptimized OpenSimplex Noise Classic Orientation"; }
+			OpenSimplexUnoptimized noise = new OpenSimplexUnoptimized(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -123,15 +123,15 @@ class NoiseMetrics3_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "Legacy OpenSimplex Noise PlaneFirst Orientation"; }
-			OpenSimplexOld noise = new OpenSimplexOld(0);
+			{ name = "Legacy OpenSimplex Noise XZBeforeY Orientation"; }
+			OpenSimplexUnoptimized noise = new OpenSimplexUnoptimized(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
 				for (int z = 0; z < DEPTH; z++) {
 					for (int y = 0; y < HEIGHT; y++) {
 						for (int x = 0; x < WIDTH; x++) {
-							buffer[z][y][x] = noise.eval3_PlaneFirst((x + offX) * NOISE_EVAL_FREQ * 2, (y + offY) * NOISE_EVAL_FREQ * 2, (z + offZ) * NOISE_EVAL_FREQ * 2);
+							buffer[z][y][x] = noise.eval3_XZBeforeY((x + offX) * NOISE_EVAL_FREQ * 2, (y + offY) * NOISE_EVAL_FREQ * 2, (z + offZ) * NOISE_EVAL_FREQ * 2);
 						}
 					}
 				}

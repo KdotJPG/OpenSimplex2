@@ -1,5 +1,5 @@
 /**
- * K.jpg's SuperSimplex noise ("OpenSimplex 2, smooth version").
+ * K.jpg's OpenSimplex 2, smooth variant ("SuperSimplex")
  *
  * - 2D is standard simplex, modified to support larger kernels.
  *   Implemented using a lookup table.
@@ -9,7 +9,7 @@
  * Multiple versions of each function are provided. See the
  * documentation above each, for more info.
  */
-public class SuperSimplexNoise {
+public class OpenSimplex2S {
 	
 	private static final int PSIZE = 2048;
 	private static final int PMASK = 2047;
@@ -18,7 +18,7 @@ public class SuperSimplexNoise {
 	private Grad2[] permGrad2;
 	private Grad3[] permGrad3;
 
-	public SuperSimplexNoise(long seed) {
+	public OpenSimplex2S(long seed) {
 		perm = new short[PSIZE];
 		permGrad2 = new Grad2[PSIZE];
 		permGrad3 = new Grad3[PSIZE];
@@ -346,7 +346,7 @@ public class SuperSimplexNoise {
 		}
 	}
 	
-	public static final double N2 = 0.05382168030817933;
+	public static final double N2 = 0.05481866495625118;
 	public static final double N3 = 0.2781926117527186;
 	private static final Grad2[] GRADIENTS_2D;
 	private static final Grad3[] GRADIENTS_3D;
@@ -354,18 +354,30 @@ public class SuperSimplexNoise {
 		
 		GRADIENTS_2D = new Grad2[PSIZE];
 		Grad2[] grad2 = {
-			new Grad2(                0.0,                 1.0),
-			new Grad2(                0.5,  0.8660254037844387),
-			new Grad2( 0.8660254037844387,                 0.5),
-			new Grad2(                1.0,                 0.0),
-			new Grad2( 0.8660254037844387,                -0.5),
-			new Grad2(                0.5, -0.8660254037844387),
-			new Grad2(                0.0,                -1.0),
-			new Grad2(               -0.5, -0.8660254037844387),
-			new Grad2(-0.8660254037844387,                -0.5),
-			new Grad2(               -1.0,                 0.0),
-			new Grad2(-0.8660254037844387,                 0.5),
-			new Grad2(               -0.5,  0.8660254037844387)
+			new Grad2( 0.130526192220052,  0.99144486137381),
+			new Grad2( 0.38268343236509,   0.923879532511287),
+			new Grad2( 0.608761429008721,  0.793353340291235),
+			new Grad2( 0.793353340291235,  0.608761429008721),
+			new Grad2( 0.923879532511287,  0.38268343236509),
+			new Grad2( 0.99144486137381,   0.130526192220051),
+			new Grad2( 0.99144486137381,  -0.130526192220051),
+			new Grad2( 0.923879532511287, -0.38268343236509),
+			new Grad2( 0.793353340291235, -0.60876142900872),
+			new Grad2( 0.608761429008721, -0.793353340291235),
+			new Grad2( 0.38268343236509,  -0.923879532511287),
+			new Grad2( 0.130526192220052, -0.99144486137381),
+			new Grad2(-0.130526192220052, -0.99144486137381),
+			new Grad2(-0.38268343236509,  -0.923879532511287),
+			new Grad2(-0.608761429008721, -0.793353340291235),
+			new Grad2(-0.793353340291235, -0.608761429008721),
+			new Grad2(-0.923879532511287, -0.38268343236509),
+			new Grad2(-0.99144486137381,  -0.130526192220052),
+			new Grad2(-0.99144486137381,   0.130526192220051),
+			new Grad2(-0.923879532511287,  0.38268343236509),
+			new Grad2(-0.793353340291235,  0.608761429008721),
+			new Grad2(-0.608761429008721,  0.793353340291235),
+			new Grad2(-0.38268343236509,   0.923879532511287),
+			new Grad2(-0.130526192220052,  0.99144486137381)
 		};
 		Grad2[] grad2XBeforeY = new Grad2[grad2.length];
 		for (int i = 0; i < grad2.length; i++) {

@@ -2,13 +2,15 @@
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
-* The provided 3D function in **SuperSimplexNoise** ("OpenSimplex 2, smooth version") is about as fast as optimized OpenSimplex, but has better uniformity.
+* The provided 3D function in **OpenSimplex2S** (OpenSimplex 2, smooth version / "SuperSimplex") is about as fast as optimized OpenSimplex, but has better uniformity.
 
-* The provided 3D function in **FastSimplexStyleNoise** ("OpenSimplex 2, faster version") is about as fast as common Simplex noise implementations, but uses a much different process.
+* The provided 3D function in **OpenSimplex2F** (OpenSimplex 2, faster version / "Fast Simplex-Style Noise") is about as fast as common Simplex noise implementations, but uses a much different process.
 
-* The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, and perform similar to or faster than the average.
+* The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, use lattice-symmetric gradient sets, and perform similar to or faster than the average.
 
 * All functions are given new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
+
+* Updated Legacy OpenSimplex with new gradient sets is included in java/legacy and csharp/legacy.
 
 The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradient-Noise/tree/master/java/areagen) offer speed-optimized whole-area generators, which operate by flood-fill queue on the noise lattice. (i.e. they don't use a "range")
 
@@ -23,10 +25,11 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * Consolidate render tiles in readme into fewer images
 * Move radius into unified constant
 * Test 24-gon instead of 12-gon for 2D gradient set, and replace if results nicer.
+* Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
 
 #### Maybe TODO:
 
-* Create combined FastSimplexStyleNoise and SuperSimplexNoise in one file, reducing repetition for someone who needs both.
+* Create combined OpenSimplex2F and OpenSimplex2S in one file, reducing repetition for someone who needs both.
 * Include octave summation, ridged noise, etc.
 * Exponentially-distributed noise ([source of idea](http://jcgt.org/published/0004/02/01/))
 * Simultaneous multi-instance evaluation
@@ -36,6 +39,9 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * Tileable 3D noise (exact, using the "classic" lattice orientation)
 
 #### Change Log
+* Replaced 12-direction 2D gradient set with a 24-direction set, to reduce visible feature repetition in thresholded single-octave 2D noise. (Feb 10, 2020)
+* Renamed filenames FastSimplexStyleNoise to OpenSimplex2F, and SuperSimplexNoise to OpenSimplex2S. (Feb 10, 2020)
+* Moved legacy OpenSimplex into legacy directories. (Feb 10, 2020)
 * Slightly reorganized description above, and added TODO/changelog. (Jan 23, 2020)
 * Renamed / additionally named the noise "OpenSimplex (2.0)", separated into two versions/variants. (Jan 23, 2020)
   * SuperSimplex and FastSimplexStyleNoise are very similar to each other algorithmically, and are in the same spirit as the original OpenSimplex.
@@ -47,27 +53,27 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 ## Renders
 
-### SuperSimplexNoise, 2D
+### OpenSimplex2S, 2D
 
-![SuperSimplexNoise, 2D](images/ssn2.png?raw=true)
+![OpenSimplex2S, 2D](images/ssn2.png?raw=true)
 
-### FastSimplexStyleNoise, 2D
+### OpenSimplex2F, 2D
 
-![FastSimplexStyleNoise, 2D](images/fssn2.png?raw=true)
+![OpenSimplex2F, 2D](images/fssn2.png?raw=true)
 
 ### Updated OpenSimplexNoise, 2D
 
-![SuperSimplexNoise, 3D (Classic, 2D slice)](images/osn2.png?raw=true)
+![OpenSimplex2S, 3D (Classic, 2D slice)](images/osn2.png?raw=true)
 
 ---
 
-### SuperSimplexNoise, 3D (Classic, 2D slice)
+### OpenSimplex2S, 3D (Classic, 2D slice)
 
 ![Updated OpenSimplexNoise, 2D](images/ssn3c.png?raw=true)
 
-### FastSimplexStyleNoise, 3D (Classic, 2D slice)
+### OpenSimplex2F, 3D (Classic, 2D slice)
 
-![FastSimplexStyleNoise, 3D (Classic, 2D slice)](images/fssn3c.png?raw=true)
+![OpenSimplex2F, 3D (Classic, 2D slice)](images/fssn3c.png?raw=true)
 
 ### Updated OpenSimplexNoise, 3D (Classic, 2D slice)
 
@@ -75,46 +81,46 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 ---
 
-### SuperSimplexNoise, 3D (PlaneFirst, 2D slice)
+### OpenSimplex2S, 3D (XYBeforeZ, 2D slice)
 
-![SuperSimplexNoise, 3D (PlaneFirst, 2D slice)](images/ssn3pf.png?raw=true)
+![OpenSimplex2S, 3D (XYBeforeZ, 2D slice)](images/ssn3pf.png?raw=true)
 
-### FastSimplexStyleNoise, 3D (PlaneFirst, 2D slice)
+### OpenSimplex2F, 3D (XYBeforeZ, 2D slice)
 
-![FastSimplexStyleNoise, 3D (PlaneFirst, 2D slice)](images/fssn3pf.png?raw=true)
+![OpenSimplex2F, 3D (XYBeforeZ, 2D slice)](images/fssn3pf.png?raw=true)
 
-### Updated OpenSimplexNoise, 3D (PlaneFirst, 2D slices)
+### Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slices)
 
-![Updated OpenSimplexNoise, 3D (PlaneFirst, 2D slice at z=0.0)](images/osn3pfa.png?raw=true)
+![Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slice at z=0.0)](images/osn3pfa.png?raw=true)
 
-![Updated OpenSimplexNoise, 3D (PlaneFirst, 2D slice at z=0.5)](images/osn3pfb.png?raw=true)
+![Updated OpenSimplexNoise, 3D (XYBeforeZ, 2D slice at z=0.5)](images/osn3pfb.png?raw=true)
 
 ---
 
-### Updated OpenSimplexNoise, 4D (2D slice)
+### Updated OpenSimplex, 4D (2D slice)
 
-![Updated OpenSimplexNoise, 4D (PlaneFirst, 2D slice)](images/osn4.png?raw=true)
+![Updated OpenSimplex, 4D (2D slice)](images/osn4.png?raw=true)
 
 
 ## Performance Metrics
 
 ### SuperSimplex vs OpenSimplex (2D)
 
-![2D Metrics SuperSimplexNoise](images/metrics_ssn2.png?raw=true)
+![2D Metrics OpenSimplex2S](images/metrics_ssn2.png?raw=true)
 
 It would appear that the older 2D OpenSimplex comes out ahead of the refactored version. But DigitalShadow's 3D and especially 4D refactorings come out ahead. The results may have been different had I tested in the original C# language of the refactored version, rather than Java.
 
-### FastSimplexStyleNoise vs others (2D)
+### OpenSimplex2F vs others (2D)
 
-![2D Metrics FastSimplexStyleNoise](images/metrics_fssn2.png?raw=true)
+![2D Metrics OpenSimplex2F](images/metrics_fssn2.png?raw=true)
 
 ### SuperSimplex vs OpenSimplex (3D)
 
-![3D Metrics SuperSimplexNoise](images/metrics_ssn3.png?raw=true)
+![3D Metrics OpenSimplex2S](images/metrics_ssn3.png?raw=true)
 
-### FastSimplexStyleNoise vs others (3D)
+### OpenSimplex2F vs others (3D)
 
-![3D Metrics FastSimplexStyleNoise](images/metrics_fssn3.png?raw=true)
+![3D Metrics OpenSimplex2F](images/metrics_fssn3.png?raw=true)
 
 ### OpenSimplex legacy vs DigitalShadow's refactor (4D)
 

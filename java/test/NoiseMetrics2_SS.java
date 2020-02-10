@@ -18,9 +18,9 @@ class NoiseMetrics2_SS {
 		List<NoiseTimer> noiseTimers = new ArrayList<>();
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Area Generation"; }
-			SuperSimplexNoise.GenerateContext2D ctx = new SuperSimplexNoise.GenerateContext2D(NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Area Generation"; }
+			OpenSimplex2S.GenerateContext2D ctx = new OpenSimplex2S.GenerateContext2D(NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -30,8 +30,8 @@ class NoiseMetrics2_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "SuperSimplexNoise Evaluation"; }
-			SuperSimplexNoise noise = new SuperSimplexNoise(0);
+			{ name = "OpenSimplex2S Evaluation"; }
+			OpenSimplex2S noise = new OpenSimplex2S(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -44,8 +44,8 @@ class NoiseMetrics2_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "DigitalShadow's Optimized OpenSimplex Noise"; }
-			OpenSimplexNoise noise = new OpenSimplexNoise(0);
+			{ name = "DigitalShadow's Optimized OpenSimplex Noise Implementation"; }
+			OpenSimplex noise = new OpenSimplex(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -58,8 +58,8 @@ class NoiseMetrics2_SS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "Legacy OpenSimplex Noise"; }
-			OpenSimplexOld noise = new OpenSimplexOld(0);
+			{ name = "Unoptimized OpenSimplex Noise"; }
+			OpenSimplex noise = new OpenSimplex(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];

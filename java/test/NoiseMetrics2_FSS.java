@@ -18,9 +18,9 @@ class NoiseMetrics2_FSS {
 		List<NoiseTimer> noiseTimers = new ArrayList<>();
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Area Generation"; }
-			FastSimplexStyleNoise.GenerateContext2D ctx = new FastSimplexStyleNoise.GenerateContext2D(NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Area Generation"; }
+			OpenSimplex2F.GenerateContext2D ctx = new OpenSimplex2F.GenerateContext2D(NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -30,8 +30,8 @@ class NoiseMetrics2_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Evaluation"; }
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Evaluation"; }
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -44,7 +44,7 @@ class NoiseMetrics2_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "Gustavson's Simplex Noise"; }
+			{ name = "Gustavson's Simplex Noise Implementation"; }
 			
 			void test(int offX, int offY) {
 				double[][] buffer = new double[HEIGHT][WIDTH];
@@ -57,7 +57,7 @@ class NoiseMetrics2_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastNoise Simplex"; }
+			{ name = "FastNoise Simplex Implementation"; }
 			FastNoise fastNoise = new FastNoise(0);
 			{ fastNoise.SetNoiseType(FastNoise.NoiseType.Simplex); }
 			
@@ -72,7 +72,7 @@ class NoiseMetrics2_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastNoise Oldperlin"; }
+			{ name = "FastNoise Oldperlin Implementation"; }
 			FastNoise fastNoise = new FastNoise(0);
 			{ fastNoise.SetNoiseType(FastNoise.NoiseType.Perlin); }
 			

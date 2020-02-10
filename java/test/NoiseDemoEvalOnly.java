@@ -1,5 +1,5 @@
 /*
- * Noise Demo 3D.
+ * Noise Demo 2D.
  * Replace OpenSimplex2S with OpenSimplex2F to demo OpenSimplex2F instead.
  */
 
@@ -8,33 +8,21 @@ import javax.imageio.ImageIO;
 import java.io.*;
 import javax.swing.*;
 
-public class NoiseDemo3
+public class NoiseDemoEvalOnly
 {
 	private static final int WIDTH = 1024;
 	private static final int HEIGHT = 1024;
 	private static final double PERIOD = 64.0;
 	private static final int OFF_X = 2048;
 	private static final int OFF_Y = 2048;
-	private static GenerateType generateType = GenerateType.AreaGenerator;
 	
 	private static final double FREQ = 1.0 / PERIOD;
-	
-	private enum GenerateType {
-		Evaluator,
-		AreaGenerator,
-		ShowDifference
-	}
 
 	public static void main(String[] args)
 			throws IOException {
 		
 		// Initialize
-		OpenSimplex2S noise = new OpenSimplex2S(1234);
-		OpenSimplex2S.GenerateContext3D context = new OpenSimplex2S.GenerateContext3D(OpenSimplex2S.LatticeOrientation3D.XYBeforeZ, FREQ, FREQ, FREQ, 1.0);
-		
-		// Generate
-		double[][] buffer = new double[HEIGHT][WIDTH];
-		if (generateType != GenerateType.Evaluator) noise.generate3(context, new double[][][] { buffer }, OFF_X, OFF_Y, 0);
+		OpenSimplex2S noise = new OpenSimplex2S(1);
 		
 		// Image
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -42,23 +30,10 @@ public class NoiseDemo3
 		{
 			for (int x = 0; x < WIDTH; x++)
 			{
-				double value = buffer[y][x];
-				double evalValue = 0;
+				double value = noise.noise3_XZBeforeY((x + OFF_X) * FREQ, 0.0, (y + OFF_Y) * FREQ);
 				
-				if (generateType != GenerateType.AreaGenerator)
-					evalValue = noise.noise3_XYBeforeZ((x + OFF_X) * FREQ, (y + OFF_Y) * FREQ, 0);
-				
-				switch(generateType) {
-					case Evaluator:
-						value = evalValue;
-						break;
-					case ShowDifference:
-						value -= evalValue;
-						break;
-				}
-				
-				if (value < -1) value = -1;
-				else if (value > 1) value = 1;
+				//if (value < -1) value = -1;
+				//else if (value > 1) value = 1;
 				
 				int rgb = 0x010101 * (int)((value + 1) * 127.5);
 				image.setRGB(x, y, rgb);

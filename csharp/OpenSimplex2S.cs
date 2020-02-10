@@ -1,5 +1,5 @@
 ﻿/**
- * K.jpg's SuperSimplex noise ("OpenSimplex 2, smooth version").
+ * K.jpg's OpenSimplex 2, smooth variant ("SuperSimplex")
  *
  * - 2D is standard simplex, modified to support larger kernels.
  *   Implemented using a lookup table.
@@ -10,9 +10,11 @@
  * documentation above each, for more info.
  */
 
+using System.Runtime.CompilerServices;
+
 namespace Noise
 {
-    public class SuperSimplexNoise
+    public class OpenSimplex2S
     {
         private const int PSIZE = 2048;
         private const int PMASK = 2047;
@@ -21,7 +23,7 @@ namespace Noise
         private Grad2[] permGrad2;
         private Grad3[] permGrad3;
 
-        public SuperSimplexNoise(long seed)
+        public OpenSimplex2S(long seed)
         {
             perm = new short[PSIZE];
             permGrad2 = new Grad2[PSIZE];
@@ -118,7 +120,7 @@ namespace Noise
 
         /**
          * 3D Re-oriented 8-point BCC noise, classic orientation
-         * Proper substitute for what 3D SuperSimplex would be,
+         * Proper substitute for what 3D SuperSimplex "should" be,
          * in light of Forbidden Formulae.
          * Use noise3_XYBeforeZ or noise3_XZBeforeY instead, wherever appropriate.
          */
@@ -228,6 +230,7 @@ namespace Noise
          * Utility
          */
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int fastFloor(double x)
         {
             int xi = (int)x;
@@ -239,16 +242,16 @@ namespace Noise
          */
 
         private static LatticePoint2D[] LOOKUP_2D;
-	    private static LatticePoint3D[] LOOKUP_3D;
+        private static LatticePoint3D[] LOOKUP_3D;
 
-        private const double N2 = 0.05382168030817933;
+        private const double N2 = 0.05481866495625118;
         private const double N3 = 0.2781926117527186;
         private static Grad2[] GRADIENTS_2D;
         private static Grad3[] GRADIENTS_3D;
 
-        static SuperSimplexNoise() {
-		    LOOKUP_2D = new LatticePoint2D[8 * 4];
-		    LOOKUP_3D = new LatticePoint3D[8];
+        static OpenSimplex2S() {
+            LOOKUP_2D = new LatticePoint2D[8 * 4];
+            LOOKUP_3D = new LatticePoint3D[8];
 
             for (int i = 0; i < 8; i++)
             {
@@ -336,18 +339,30 @@ namespace Noise
 
             GRADIENTS_2D = new Grad2[PSIZE];
             Grad2[] grad2 = {
-                new Grad2(                0.0,                 1.0),
-                new Grad2(                0.5,  0.8660254037844387),
-                new Grad2( 0.8660254037844387,                 0.5),
-                new Grad2(                1.0,                 0.0),
-                new Grad2( 0.8660254037844387,                -0.5),
-                new Grad2(                0.5, -0.8660254037844387),
-                new Grad2(                0.0,                -1.0),
-                new Grad2(               -0.5, -0.8660254037844387),
-                new Grad2(-0.8660254037844387,                -0.5),
-                new Grad2(               -1.0,                 0.0),
-                new Grad2(-0.8660254037844387,                 0.5),
-                new Grad2(               -0.5,  0.8660254037844387)
+                new Grad2( 0.130526192220052,  0.99144486137381),
+                new Grad2( 0.38268343236509,   0.923879532511287),
+                new Grad2( 0.608761429008721,  0.793353340291235),
+                new Grad2( 0.793353340291235,  0.608761429008721),
+                new Grad2( 0.923879532511287,  0.38268343236509),
+                new Grad2( 0.99144486137381,   0.130526192220051),
+                new Grad2( 0.99144486137381,  -0.130526192220051),
+                new Grad2( 0.923879532511287, -0.38268343236509),
+                new Grad2( 0.793353340291235, -0.60876142900872),
+                new Grad2( 0.608761429008721, -0.793353340291235),
+                new Grad2( 0.38268343236509,  -0.923879532511287),
+                new Grad2( 0.130526192220052, -0.99144486137381),
+                new Grad2(-0.130526192220052, -0.99144486137381),
+                new Grad2(-0.38268343236509,  -0.923879532511287),
+                new Grad2(-0.608761429008721, -0.793353340291235),
+                new Grad2(-0.793353340291235, -0.608761429008721),
+                new Grad2(-0.923879532511287, -0.38268343236509),
+                new Grad2(-0.99144486137381,  -0.130526192220052),
+                new Grad2(-0.99144486137381,   0.130526192220051),
+                new Grad2(-0.923879532511287,  0.38268343236509),
+                new Grad2(-0.793353340291235,  0.608761429008721),
+                new Grad2(-0.608761429008721,  0.793353340291235),
+                new Grad2(-0.38268343236509,   0.923879532511287),
+                new Grad2(-0.130526192220052,  0.99144486137381)
             };
             for (int i = 0; i < grad2.Length; i++)
             {
@@ -418,8 +433,8 @@ namespace Noise
                 GRADIENTS_3D[i] = grad3[i % grad3.Length];
             }
         }
-	
-	    private class LatticePoint2D
+    
+        private class LatticePoint2D
         {
             public int xsv, ysv;
             public double dx, dy;

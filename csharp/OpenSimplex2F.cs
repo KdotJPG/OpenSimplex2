@@ -1,5 +1,5 @@
-﻿/*
- * K.jpg's Fast Simplex-Style noise ("OpenSimplex 2, faster version").
+﻿/**
+ * K.jpg's OpenSimplex 2, faster variant ("Fast Simplex-Style Noise")
  *
  * - 2D is standard simplex implemented using a lookup table.
  * - 3D is "Re-oriented 4-point BCC noise" which constructs an
@@ -8,6 +8,8 @@
  * Multiple versions of each function are provided. See the
  * documentation above each, for more info.
  */
+
+using System.Runtime.CompilerServices;
 
 namespace Noise
 {
@@ -222,6 +224,7 @@ namespace Noise
          * Utility
          */
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int fastFloor(double x)
         {
             int xi = (int)x;
@@ -233,33 +236,33 @@ namespace Noise
          */
 
         private static LatticePoint2D[] LOOKUP_2D;
-	    private static LatticePoint3D[] LOOKUP_3D;
+        private static LatticePoint3D[] LOOKUP_3D;
 
-        private const double N2 = 0.009837128628769433;
+        private const double N2 = 0.01001634121365712;
         private const double N3 = 0.030485933181293584;
         private static Grad2[] GRADIENTS_2D;
         private static Grad3[] GRADIENTS_3D;
 
         static FastSimplexStyleNoise() {
-		    LOOKUP_2D = new LatticePoint2D[2 * 3];
-		    LOOKUP_3D = new LatticePoint3D[8];
-		
-		    for (int i = 0; i< 2; i++) {
-			    int i1, j1;
-			    if ((i & 1) == 0) { i1 = 1; j1 = 0; }
-			    else { i1 = 0; j1 = 1; }
+            LOOKUP_2D = new LatticePoint2D[2 * 3];
+            LOOKUP_3D = new LatticePoint3D[8];
+        
+            for (int i = 0; i < 2; i++) {
+                int i1, j1;
+                if ((i & 1) == 0) { i1 = 1; j1 = 0; }
+                else { i1 = 0; j1 = 1; }
                 LOOKUP_2D[i * 3 + 0] = new LatticePoint2D(0, 0);
                 LOOKUP_2D[i * 3 + 1] = new LatticePoint2D(1, 1);
                 LOOKUP_2D[i * 3 + 2] = new LatticePoint2D(i1, j1);
-		    }
-		
-		    for (int i = 0; i< 8; i++) {
-			    int i1, j1, k1, i2, j2, k2;
+            }
+        
+            for (int i = 0; i < 8; i++) {
+                int i1, j1, k1, i2, j2, k2;
                 i1 = (i >> 0) & 1; j1 = (i >> 1) & 1; k1 = (i >> 2) & 1;
-			    i2 = i1 ^ 1; j2 = j1 ^ 1; k2 = k1 ^ 1;
-			
-			    // The two points within this octant, one from each of the two cubic half-lattices.
-			    LatticePoint3D c0 = new LatticePoint3D(i1, j1, k1, 0);
+                i2 = i1 ^ 1; j2 = j1 ^ 1; k2 = k1 ^ 1;
+            
+                // The two points within this octant, one from each of the two cubic half-lattices.
+                LatticePoint3D c0 = new LatticePoint3D(i1, j1, k1, 0);
                 LatticePoint3D c1 = new LatticePoint3D(i1 + i2, j1 + j2, k1 + k2, 1);
 
                 // Each single step away on the first half-lattice.
@@ -274,36 +277,48 @@ namespace Noise
 
                 // First two are guaranteed.
                 c0.NextOnFailure = c0.NextOnSuccess = c1;
-			    c1.NextOnFailure = c1.NextOnSuccess = c2;
-			
-			    // Once we find one on the first half-lattice, the rest are out.
-			    // In addition, knowing c2 rules out c5.
-			    c2.NextOnFailure = c3; c2.NextOnSuccess = c6;
-			    c3.NextOnFailure = c4; c3.NextOnSuccess = c5;
-			    c4.NextOnFailure = c4.NextOnSuccess = c5;
-			
-			    // Once we find one on the second half-lattice, the rest are out.
-			    c5.NextOnFailure = c6; c5.NextOnSuccess = null;
-			    c6.NextOnFailure = c7; c6.NextOnSuccess = null;
-			    c7.NextOnFailure = c7.NextOnSuccess = null;
-			
-			    LOOKUP_3D[i] = c0;
+                c1.NextOnFailure = c1.NextOnSuccess = c2;
+            
+                // Once we find one on the first half-lattice, the rest are out.
+                // In addition, knowing c2 rules out c5.
+                c2.NextOnFailure = c3; c2.NextOnSuccess = c6;
+                c3.NextOnFailure = c4; c3.NextOnSuccess = c5;
+                c4.NextOnFailure = c4.NextOnSuccess = c5;
+            
+                // Once we find one on the second half-lattice, the rest are out.
+                c5.NextOnFailure = c6; c5.NextOnSuccess = null;
+                c6.NextOnFailure = c7; c6.NextOnSuccess = null;
+                c7.NextOnFailure = c7.NextOnSuccess = null;
+            
+                LOOKUP_3D[i] = c0;
             }
 
             GRADIENTS_2D = new Grad2[PSIZE];
             Grad2[] grad2 = {
-                new Grad2(                0.0,                 1.0),
-                new Grad2(                0.5,  0.8660254037844387),
-                new Grad2( 0.8660254037844387,                 0.5),
-                new Grad2(                1.0,                 0.0),
-                new Grad2( 0.8660254037844387,                -0.5),
-                new Grad2(                0.5, -0.8660254037844387),
-                new Grad2(                0.0,                -1.0),
-                new Grad2(               -0.5, -0.8660254037844387),
-                new Grad2(-0.8660254037844387,                -0.5),
-                new Grad2(               -1.0,                 0.0),
-                new Grad2(-0.8660254037844387,                 0.5),
-                new Grad2(               -0.5,  0.8660254037844387)
+                new Grad2( 0.130526192220052,  0.99144486137381),
+                new Grad2( 0.38268343236509,   0.923879532511287),
+                new Grad2( 0.608761429008721,  0.793353340291235),
+                new Grad2( 0.793353340291235,  0.608761429008721),
+                new Grad2( 0.923879532511287,  0.38268343236509),
+                new Grad2( 0.99144486137381,   0.130526192220051),
+                new Grad2( 0.99144486137381,  -0.130526192220051),
+                new Grad2( 0.923879532511287, -0.38268343236509),
+                new Grad2( 0.793353340291235, -0.60876142900872),
+                new Grad2( 0.608761429008721, -0.793353340291235),
+                new Grad2( 0.38268343236509,  -0.923879532511287),
+                new Grad2( 0.130526192220052, -0.99144486137381),
+                new Grad2(-0.130526192220052, -0.99144486137381),
+                new Grad2(-0.38268343236509,  -0.923879532511287),
+                new Grad2(-0.608761429008721, -0.793353340291235),
+                new Grad2(-0.793353340291235, -0.608761429008721),
+                new Grad2(-0.923879532511287, -0.38268343236509),
+                new Grad2(-0.99144486137381,  -0.130526192220052),
+                new Grad2(-0.99144486137381,   0.130526192220051),
+                new Grad2(-0.923879532511287,  0.38268343236509),
+                new Grad2(-0.793353340291235,  0.608761429008721),
+                new Grad2(-0.608761429008721,  0.793353340291235),
+                new Grad2(-0.38268343236509,   0.923879532511287),
+                new Grad2(-0.130526192220052,  0.99144486137381)
             };
             for (int i = 0; i < grad2.Length; i++)
             {
@@ -374,8 +389,8 @@ namespace Noise
                 GRADIENTS_3D[i] = grad3[i % grad3.Length];
             }
         }
-	
-	    private class LatticePoint2D
+    
+        private class LatticePoint2D
         {
             public int xsv, ysv;
             public double dx, dy;

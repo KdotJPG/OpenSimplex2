@@ -19,9 +19,9 @@ class NoiseMetrics3_FSS {
 		List<NoiseTimer> noiseTimers = new ArrayList<>();
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Area Generation Classic"; }
-			FastSimplexStyleNoise.GenerateContext3D ctx = new FastSimplexStyleNoise.GenerateContext3D(FastSimplexStyleNoise.LatticeOrientation3D.Classic, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Area Generation Classic"; }
+			OpenSimplex2F.GenerateContext3D ctx = new OpenSimplex2F.GenerateContext3D(OpenSimplex2F.LatticeOrientation3D.Classic, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -31,9 +31,9 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Area Generation PlaneFirst"; }
-			FastSimplexStyleNoise.GenerateContext3D ctx = new FastSimplexStyleNoise.GenerateContext3D(FastSimplexStyleNoise.LatticeOrientation3D.PlaneFirst, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Area Generation XZBeforeY"; }
+			OpenSimplex2F.GenerateContext3D ctx = new OpenSimplex2F.GenerateContext3D(OpenSimplex2F.LatticeOrientation3D.XZBeforeY, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, NOISE_EVAL_FREQ, 1.0);
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -43,8 +43,8 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Evaluation Classic"; }
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Evaluation Classic"; }
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -59,15 +59,15 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastSimplexStyleNoise Evaluation PlaneFirst"; }
-			FastSimplexStyleNoise noise = new FastSimplexStyleNoise(0);
+			{ name = "OpenSimplex2F Evaluation XZBeforeY"; }
+			OpenSimplex2F noise = new OpenSimplex2F(0);
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
 				for (int z = 0; z < DEPTH; z++) {
 					for (int y = 0; y < HEIGHT; y++) {
 						for (int x = 0; x < WIDTH; x++) {
-							buffer[z][y][x] = noise.noise3_PlaneFirst((x + offX) * NOISE_EVAL_FREQ, (y + offY) * NOISE_EVAL_FREQ, (z + offZ) * NOISE_EVAL_FREQ);
+							buffer[z][y][x] = noise.noise3_XZBeforeY((x + offX) * NOISE_EVAL_FREQ, (y + offY) * NOISE_EVAL_FREQ, (z + offZ) * NOISE_EVAL_FREQ);
 						}
 					}
 				}
@@ -75,7 +75,7 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "Gustavson's Simplex Noise"; }
+			{ name = "Gustavson's Simplex Noise Implementation"; }
 			
 			void test(int offX, int offY, int offZ) {
 				double[][][] buffer = new double[DEPTH][HEIGHT][WIDTH];
@@ -90,7 +90,7 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastNoise Simplex"; }
+			{ name = "FastNoise Simplex Implementation"; }
 			FastNoise fastNoise = new FastNoise(0);
 			{ fastNoise.SetNoiseType(FastNoise.NoiseType.Simplex); }
 			
@@ -107,7 +107,7 @@ class NoiseMetrics3_FSS {
 		});
 		
 		noiseTimers.add(new NoiseTimer() {
-			{ name = "FastNoise Oldperlin"; }
+			{ name = "FastNoise Oldperlin Implementation"; }
 			FastNoise fastNoise = new FastNoise(0);
 			{ fastNoise.SetNoiseType(FastNoise.NoiseType.Perlin); }
 			
