@@ -20,9 +20,9 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 #### TODO:
 
-* 4D noise
+* 4D OpenSimplex2F and OpenSimplex2S
 * More language ports
-* Move radius into unified constant
+* Move radius into unified constant (for Area Generators in particular)
 * Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
 
 #### Maybe TODO:
@@ -37,6 +37,7 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * Tileable 3D noise (exact, using the "classic" lattice orientation)
 
 #### Change Log
+* Replaced individual renders in readme with consolidated renders.
 * Replaced 12-direction 2D gradient set with a 24-direction set, to reduce visible feature repetition in thresholded single-octave 2D noise. (Feb 10, 2020)
 * Renamed filenames FastSimplexStyleNoise to OpenSimplex2F, and SuperSimplexNoise to OpenSimplex2S. (Feb 10, 2020)
 * Moved legacy OpenSimplex into legacy directories. (Feb 10, 2020)
