@@ -1,4 +1,4 @@
-## OpenSimplex 2 - SuperSimplex & Fast Simplex-Style Gradient Noise
+## OpenSimplex 2
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
@@ -72,8 +72,8 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 ![Renders 3D Classic](images/renders3Dc.png?raw=true)
 
-* OpenSimplex2F and OpenSimplex2S, 2D slices of 3D in the classic lattice orientation, look decent but are less optimized for X/Y planes being the primary focus.
-* This Updated OpenSimplex render shows less directional bias than original OpenSimplex.
+* OpenSimplex2F and OpenSimplex2S, 2D slices of 3D in the classic lattice orientation, look decent but are less ideal for X/Y planes being the primary focus.
+* This Updated OpenSimplex render appears to show less directional bias than original OpenSimplex.
 
 ### 4D OpenSimplex
 
