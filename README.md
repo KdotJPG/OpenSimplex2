@@ -1,4 +1,4 @@
-## OpenSimplex 2
+# OpenSimplex 2
 
 Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
 
