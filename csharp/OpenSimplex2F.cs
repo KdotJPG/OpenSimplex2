@@ -1,5 +1,5 @@
 ﻿/**
- * K.jpg's OpenSimplex 2, faster variant ("Fast Simplex-Style Noise")
+ * K.jpg's OpenSimplex 2, faster variant
  *
  * - 2D is standard simplex implemented using a lookup table.
  * - 3D is "Re-oriented 4-point BCC noise" which constructs an
