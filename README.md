@@ -6,7 +6,7 @@ Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D no
 
 * The provided 3D function in **OpenSimplex2F** (OpenSimplex 2, faster version) is about as fast as common Simplex noise implementations, but uses a much different process.
 
-* The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, use lattice-symmetric gradient sets, and perform similar to or faster than the average.
+* The 2D functions aren't intended to represent new developments in the same vein as the 3D+ functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, use lattice-symmetric gradient sets, and perform similar to or faster than the average.
 
 * All functions are given new gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
 
