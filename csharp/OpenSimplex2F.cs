@@ -444,7 +444,7 @@ namespace Noise
 
         private const double N2 = 0.01001634121365712;
         private const double N3 = 0.030485933181293584;
-        private const double N4 = 0.009199159388972715;
+        private const double N4 = 0.009202377986303158;
         private static Grad2[] GRADIENTS_2D;
         private static Grad3[] GRADIENTS_3D;
         private static Grad4[] GRADIENTS_4D;
