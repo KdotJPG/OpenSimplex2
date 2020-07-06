@@ -179,14 +179,45 @@ public class OpenSimplex
 		}
 		return value;
 	}
-
+	
 	public double eval(double x, double y, double z, double w) {
-		double stretchOffset = (x + y + z + w) * STRETCH_4D;
-		double xs = x + stretchOffset;
-		double ys = y + stretchOffset;
-		double zs = z + stretchOffset;
-		double ws = w + stretchOffset;
+		
+		// Get points for A4 lattice
+		double s = -0.138196601125011 * (x + y + z + w);
+		double xs = x + s, ys = y + s, zs = z + s, ws = w + s;
+		
+		return eval4_Base(xs, ys, zs, ws);
+	}
+	
+	public double eval4_XYBeforeZW(double x, double y, double z, double w) {
+		
+		double s2 = (x + y) * -0.178275657951399372 + (z + w) * 0.215623393288842828;
+		double t2 = (z + w) * -0.403949762580207112 + (x + y) * -0.375199083010075342;
+		double xs = x + s2, ys = y + s2, zs = z + t2, ws = w + t2;
+		
+		return eval4_Base(xs, ys, zs, ws);
+	}
+	
+	public double eval4_XZBeforeYW(double x, double y, double z, double w) {
+		
+		double s2 = (x + z) * -0.178275657951399372 + (y + w) * 0.215623393288842828;
+		double t2 = (y + w) * -0.403949762580207112 + (x + z) * -0.375199083010075342;
+		double xs = x + s2, ys = y + t2, zs = z + s2, ws = w + t2;
+		
+		return eval4_Base(xs, ys, zs, ws);
+	}
+	
+	public double eval4_XYZBeforeW(double x, double y, double z, double w) {
+		
+		double xyz = x + y + z;
+		double ww = w * 0.2236067977499788;
+		double s2 = xyz * -0.16666666666666666 + ww;
+		double xs = x + s2, ys = y + s2, zs = z + s2, ws = -0.5 * xyz + ww;
+		
+		return eval4_Base(xs, ys, zs, ws);
+	}
 
+	private double eval4_Base(double xs, double ys, double zs, double ws) {
 		int xsb = fastFloor(xs);
 		int ysb = fastFloor(ys);
 		int zsb = fastFloor(zs);

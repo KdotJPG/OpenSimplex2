@@ -2,13 +2,16 @@
  * K.jpg's OpenSimplex 2, faster variant
  *
  * - 2D is standard simplex implemented using a lookup table.
- * - 3D is "Re-oriented 4-point BCC noise" which constructs an
- *   isomorphic BCC lattice in a much different way than usual.
+ * - 3D is "Re-oriented 4-point BCC noise" which constructs a
+ *   congruent BCC lattice in a much different way than usual.
+ * - 4D constructs the lattice as a union of five copies of its
+ *   reciprocal. It successively finds the closest point on each.
  *
  * Multiple versions of each function are provided. See the
  * documentation above each, for more info.
  */
 
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Noise
@@ -21,12 +24,14 @@ namespace Noise
         private short[] perm;
         private Grad2[] permGrad2;
         private Grad3[] permGrad3;
+        private Grad4[] permGrad4;
 
         public OpenSimplex2F(long seed)
         {
             perm = new short[PSIZE];
             permGrad2 = new Grad2[PSIZE];
             permGrad3 = new Grad3[PSIZE];
+            permGrad4 = new Grad4[PSIZE];
             short[] source = new short[PSIZE];
             for (short i = 0; i < PSIZE; i++)
                 source[i] = i;
@@ -39,6 +44,7 @@ namespace Noise
                 perm[i] = source[r];
                 permGrad2[i] = GRADIENTS_2D[perm[i]];
                 permGrad3[i] = GRADIENTS_3D[perm[i]];
+                permGrad4[i] = GRADIENTS_4D[perm[i]];
                 source[r] = source[i];
             }
         }
@@ -88,7 +94,7 @@ namespace Noise
             double xsi = xs - xsb, ysi = ys - ysb;
 
             // Index to point list
-            int index = (int)((ysi - xsi) / 2 + 1) * 3;
+            int index = (int)((ysi - xsi) / 2 + 1);
 
             double ssi = (xsi + ysi) * -0.211324865405187;
             double xi = xsi + ssi, yi = ysi + ssi;
@@ -220,6 +226,203 @@ namespace Noise
             return value;
         }
 
+        /**
+         * 4D OpenSimplex2F noise, classic lattice orientation.
+         */
+        public double Noise4_Classic(double x, double y, double z, double w)
+        {
+
+            // Get points for A4 lattice
+            double s = -0.138196601125011 * (x + y + z + w);
+            double xs = x + s, ys = y + s, zs = z + s, ws = w + s;
+
+            return noise4_Base(xs, ys, zs, ws);
+        }
+
+        /**
+         * 4D OpenSimplex2F noise, with XY and ZW forming orthogonal triangular-based planes.
+         * Recommended for 3D terrain, where X and Y (or Z and W) are horizontal.
+         * Recommended for noise(x, y, sin(time), cos(time)) trick.
+         */
+        public double Noise4_XYBeforeZW(double x, double y, double z, double w)
+        {
+
+            double s2 = (x + y) * -0.178275657951399372 + (z + w) * 0.215623393288842828;
+            double t2 = (z + w) * -0.403949762580207112 + (x + y) * -0.375199083010075342;
+            double xs = x + s2, ys = y + s2, zs = z + t2, ws = w + t2;
+
+            return noise4_Base(xs, ys, zs, ws);
+        }
+
+        /**
+         * 4D OpenSimplex2F noise, with XZ and YW forming orthogonal triangular-based planes.
+         * Recommended for 3D terrain, where X and Z (or Y and W) are horizontal.
+         */
+        public double Noise4_XZBeforeYW(double x, double y, double z, double w)
+        {
+
+            double s2 = (x + z) * -0.178275657951399372 + (y + w) * 0.215623393288842828;
+            double t2 = (y + w) * -0.403949762580207112 + (x + z) * -0.375199083010075342;
+            double xs = x + s2, ys = y + t2, zs = z + s2, ws = w + t2;
+
+            return noise4_Base(xs, ys, zs, ws);
+        }
+
+        /**
+         * 4D OpenSimplex2F noise, with XYZ oriented like noise3_Classic,
+         * and W for an extra degree of freedom. W repeats eventually.
+         * Recommended for time-varied animations which texture a 3D object (W=time)
+         */
+        public double Noise4_XYZBeforeW(double x, double y, double z, double w)
+        {
+
+            double xyz = x + y + z;
+            double ww = w * 0.2236067977499788;
+            double s2 = xyz * -0.16666666666666666 + ww;
+            double xs = x + s2, ys = y + s2, zs = z + s2, ws = -0.5 * xyz + ww;
+
+            return noise4_Base(xs, ys, zs, ws);
+        }
+
+        /**
+         * 4D OpenSimplex2F noise base.
+         * Current implementation not fully optimized by lookup tables.
+         * But still comes out slightly ahead of Gustavson's Simplex in tests.
+         */
+        private double noise4_Base(double xs, double ys, double zs, double ws)
+        {
+            double value = 0;
+
+            // Get base points and offsets
+            int xsb = fastFloor(xs), ysb = fastFloor(ys), zsb = fastFloor(zs), wsb = fastFloor(ws);
+            double xsi = xs - xsb, ysi = ys - ysb, zsi = zs - zsb, wsi = ws - wsb;
+
+            // If we're in the lower half, flip so we can repeat the code for the upper half. We'll flip back later.
+            double siSum = xsi + ysi + zsi + wsi;
+            double ssi = siSum * 0.309016994374947; // Prep for vertex contributions.
+            bool inLowerHalf = (siSum < 2);
+            if (inLowerHalf)
+            {
+                xsi = 1 - xsi; ysi = 1 - ysi; zsi = 1 - zsi; wsi = 1 - wsi;
+                siSum = 4 - siSum;
+            }
+
+            // Consider opposing vertex pairs of the octahedron formed by the central cross-section of the stretched tesseract
+            double aabb = xsi + ysi - zsi - wsi, abab = xsi - ysi + zsi - wsi, abba = xsi - ysi - zsi + wsi;
+            double aabbScore = Math.Abs(aabb), ababScore = Math.Abs(abab), abbaScore = Math.Abs(abba);
+
+            // Find the closest point on the stretched tesseract as if it were the upper half
+            int vertexIndex, via, vib;
+            double asi, bsi;
+            if (aabbScore > ababScore && aabbScore > abbaScore)
+            {
+                if (aabb > 0)
+                {
+                    asi = zsi; bsi = wsi; vertexIndex = 0b0011; via = 0b0111; vib = 0b1011;
+                }
+                else
+                {
+                    asi = xsi; bsi = ysi; vertexIndex = 0b1100; via = 0b1101; vib = 0b1110;
+                }
+            }
+            else if (ababScore > abbaScore)
+            {
+                if (abab > 0)
+                {
+                    asi = ysi; bsi = wsi; vertexIndex = 0b0101; via = 0b0111; vib = 0b1101;
+                }
+                else
+                {
+                    asi = xsi; bsi = zsi; vertexIndex = 0b1010; via = 0b1011; vib = 0b1110;
+                }
+            }
+            else
+            {
+                if (abba > 0)
+                {
+                    asi = ysi; bsi = zsi; vertexIndex = 0b1001; via = 0b1011; vib = 0b1101;
+                }
+                else
+                {
+                    asi = xsi; bsi = wsi; vertexIndex = 0b0110; via = 0b0111; vib = 0b1110;
+                }
+            }
+            if (bsi > asi)
+            {
+                via = vib;
+                double temp = bsi;
+                bsi = asi;
+                asi = temp;
+            }
+            if (siSum + asi > 3)
+            {
+                vertexIndex = via;
+                if (siSum + bsi > 4)
+                {
+                    vertexIndex = 0b1111;
+                }
+            }
+
+            // Now flip back if we're actually in the lower half.
+            if (inLowerHalf)
+            {
+                xsi = 1 - xsi; ysi = 1 - ysi; zsi = 1 - zsi; wsi = 1 - wsi;
+                vertexIndex ^= 0b1111;
+            }
+
+            // Five points to add, total, from five copies of the A4 lattice.
+            for (int i = 0; i < 5; i++)
+            {
+
+                // Update xsb/etc. and add the lattice point's contribution.
+                LatticePoint4D c = VERTICES_4D[vertexIndex];
+                xsb += c.xsv; ysb += c.ysv; zsb += c.zsv; wsb += c.wsv;
+                double xi = xsi + ssi, yi = ysi + ssi, zi = zsi + ssi, wi = wsi + ssi;
+                double dx = xi + c.dx, dy = yi + c.dy, dz = zi + c.dz, dw = wi + c.dw;
+                double attn = 0.5 - dx * dx - dy * dy - dz * dz - dw * dw;
+                if (attn > 0)
+                {
+                    int pxm = xsb & PMASK, pym = ysb & PMASK, pzm = zsb & PMASK, pwm = wsb & PMASK;
+                    Grad4 grad = permGrad4[perm[perm[perm[pxm] ^ pym] ^ pzm] ^ pwm];
+                    double ramped = grad.dx * dx + grad.dy * dy + grad.dz * dz + grad.dw * dw;
+
+                    attn *= attn;
+                    value += attn * attn * ramped;
+                }
+
+                // Maybe this helps the compiler/JVM/LLVM/etc. know we can end the loop here. Maybe not.
+                if (i == 4) break;
+
+                // Update the relative skewed coordinates to reference the vertex we just added.
+                // Rather, reference its counterpart on the lattice copy that is shifted down by
+                // the vector <-0.2, -0.2, -0.2, -0.2>
+                xsi += c.xsi; ysi += c.ysi; zsi += c.zsi; wsi += c.wsi;
+                ssi += c.ssiDelta;
+
+                // Next point is the closest vertex on the 4-simplex whose base vertex is the aforementioned vertex.
+                double score0 = 1.0 + ssi * (-1.0 / 0.309016994374947); // Seems slightly faster than 1.0-xsi-ysi-zsi-wsi
+                vertexIndex = 0b0000;
+                if (xsi >= ysi && xsi >= zsi && xsi >= wsi && xsi >= score0)
+                {
+                    vertexIndex = 0b0001;
+                }
+                else if (ysi > xsi && ysi >= zsi && ysi >= wsi && ysi >= score0)
+                {
+                    vertexIndex = 0b0010;
+                }
+                else if (zsi > xsi && zsi > ysi && zsi >= wsi && zsi >= score0)
+                {
+                    vertexIndex = 0b0100;
+                }
+                else if (wsi > xsi && wsi > ysi && wsi > zsi && wsi >= score0)
+                {
+                    vertexIndex = 0b1000;
+                }
+            }
+
+            return value;
+        }
+
         /*
          * Utility
          */
@@ -237,30 +440,32 @@ namespace Noise
 
         private static LatticePoint2D[] LOOKUP_2D;
         private static LatticePoint3D[] LOOKUP_3D;
+        private static LatticePoint4D[] VERTICES_4D;
 
         private const double N2 = 0.01001634121365712;
         private const double N3 = 0.030485933181293584;
+        private const double N4 = 0.009199159388972715;
         private static Grad2[] GRADIENTS_2D;
         private static Grad3[] GRADIENTS_3D;
+        private static Grad4[] GRADIENTS_4D;
 
-        static OpenSimplex2F() {
-            LOOKUP_2D = new LatticePoint2D[2 * 3];
+        static OpenSimplex2F()
+        {
+            LOOKUP_2D = new LatticePoint2D[4];
             LOOKUP_3D = new LatticePoint3D[8];
-        
-            for (int i = 0; i < 2; i++) {
-                int i1, j1;
-                if ((i & 1) == 0) { i1 = 1; j1 = 0; }
-                else { i1 = 0; j1 = 1; }
-                LOOKUP_2D[i * 3 + 0] = new LatticePoint2D(0, 0);
-                LOOKUP_2D[i * 3 + 1] = new LatticePoint2D(1, 1);
-                LOOKUP_2D[i * 3 + 2] = new LatticePoint2D(i1, j1);
-            }
-        
-            for (int i = 0; i < 8; i++) {
+            VERTICES_4D = new LatticePoint4D[16];
+            
+            LOOKUP_2D[0] = new LatticePoint2D(1, 0);
+            LOOKUP_2D[1] = new LatticePoint2D(0, 0);
+            LOOKUP_2D[2] = new LatticePoint2D(1, 1);
+            LOOKUP_2D[3] = new LatticePoint2D(0, 1);
+
+            for (int i = 0; i < 8; i++)
+            {
                 int i1, j1, k1, i2, j2, k2;
                 i1 = (i >> 0) & 1; j1 = (i >> 1) & 1; k1 = (i >> 2) & 1;
                 i2 = i1 ^ 1; j2 = j1 ^ 1; k2 = k1 ^ 1;
-            
+
                 // The two points within this octant, one from each of the two cubic half-lattices.
                 LatticePoint3D c0 = new LatticePoint3D(i1, j1, k1, 0);
                 LatticePoint3D c1 = new LatticePoint3D(i1 + i2, j1 + j2, k1 + k2, 1);
@@ -278,19 +483,24 @@ namespace Noise
                 // First two are guaranteed.
                 c0.NextOnFailure = c0.NextOnSuccess = c1;
                 c1.NextOnFailure = c1.NextOnSuccess = c2;
-            
+
                 // Once we find one on the first half-lattice, the rest are out.
                 // In addition, knowing c2 rules out c5.
                 c2.NextOnFailure = c3; c2.NextOnSuccess = c6;
                 c3.NextOnFailure = c4; c3.NextOnSuccess = c5;
                 c4.NextOnFailure = c4.NextOnSuccess = c5;
-            
+
                 // Once we find one on the second half-lattice, the rest are out.
                 c5.NextOnFailure = c6; c5.NextOnSuccess = null;
                 c6.NextOnFailure = c7; c6.NextOnSuccess = null;
                 c7.NextOnFailure = c7.NextOnSuccess = null;
-            
+
                 LOOKUP_3D[i] = c0;
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                VERTICES_4D[i] = new LatticePoint4D((i >> 0) & 1, (i >> 1) & 1, (i >> 2) & 1, (i >> 3) & 1);
             }
 
             GRADIENTS_2D = new Grad2[PSIZE];
@@ -388,9 +598,181 @@ namespace Noise
             {
                 GRADIENTS_3D[i] = grad3[i % grad3.Length];
             }
+
+            GRADIENTS_4D = new Grad4[PSIZE];
+            Grad4[] grad4 = {
+                new Grad4(-0.753341017856078,    -0.37968289875261624,  -0.37968289875261624,  -0.37968289875261624),
+                new Grad4(-0.7821684431180708,   -0.4321472685365301,   -0.4321472685365301,    0.12128480194602098),
+                new Grad4(-0.7821684431180708,   -0.4321472685365301,    0.12128480194602098,  -0.4321472685365301),
+                new Grad4(-0.7821684431180708,    0.12128480194602098,  -0.4321472685365301,   -0.4321472685365301),
+                new Grad4(-0.8586508742123365,   -0.508629699630796,     0.044802370851755174,  0.044802370851755174),
+                new Grad4(-0.8586508742123365,    0.044802370851755174, -0.508629699630796,     0.044802370851755174),
+                new Grad4(-0.8586508742123365,    0.044802370851755174,  0.044802370851755174, -0.508629699630796),
+                new Grad4(-0.9982828964265062,   -0.03381941603233842,  -0.03381941603233842,  -0.03381941603233842),
+                new Grad4(-0.37968289875261624,  -0.753341017856078,    -0.37968289875261624,  -0.37968289875261624),
+                new Grad4(-0.4321472685365301,   -0.7821684431180708,   -0.4321472685365301,    0.12128480194602098),
+                new Grad4(-0.4321472685365301,   -0.7821684431180708,    0.12128480194602098,  -0.4321472685365301),
+                new Grad4( 0.12128480194602098,  -0.7821684431180708,   -0.4321472685365301,   -0.4321472685365301),
+                new Grad4(-0.508629699630796,    -0.8586508742123365,    0.044802370851755174,  0.044802370851755174),
+                new Grad4( 0.044802370851755174, -0.8586508742123365,   -0.508629699630796,     0.044802370851755174),
+                new Grad4( 0.044802370851755174, -0.8586508742123365,    0.044802370851755174, -0.508629699630796),
+                new Grad4(-0.03381941603233842,  -0.9982828964265062,   -0.03381941603233842,  -0.03381941603233842),
+                new Grad4(-0.37968289875261624,  -0.37968289875261624,  -0.753341017856078,    -0.37968289875261624),
+                new Grad4(-0.4321472685365301,   -0.4321472685365301,   -0.7821684431180708,    0.12128480194602098),
+                new Grad4(-0.4321472685365301,    0.12128480194602098,  -0.7821684431180708,   -0.4321472685365301),
+                new Grad4( 0.12128480194602098,  -0.4321472685365301,   -0.7821684431180708,   -0.4321472685365301),
+                new Grad4(-0.508629699630796,     0.044802370851755174, -0.8586508742123365,    0.044802370851755174),
+                new Grad4( 0.044802370851755174, -0.508629699630796,    -0.8586508742123365,    0.044802370851755174),
+                new Grad4( 0.044802370851755174,  0.044802370851755174, -0.8586508742123365,   -0.508629699630796),
+                new Grad4(-0.03381941603233842,  -0.03381941603233842,  -0.9982828964265062,   -0.03381941603233842),
+                new Grad4(-0.37968289875261624,  -0.37968289875261624,  -0.37968289875261624,  -0.753341017856078),
+                new Grad4(-0.4321472685365301,   -0.4321472685365301,    0.12128480194602098,  -0.7821684431180708),
+                new Grad4(-0.4321472685365301,    0.12128480194602098,  -0.4321472685365301,   -0.7821684431180708),
+                new Grad4( 0.12128480194602098,  -0.4321472685365301,   -0.4321472685365301,   -0.7821684431180708),
+                new Grad4(-0.508629699630796,     0.044802370851755174,  0.044802370851755174, -0.8586508742123365),
+                new Grad4( 0.044802370851755174, -0.508629699630796,     0.044802370851755174, -0.8586508742123365),
+                new Grad4( 0.044802370851755174,  0.044802370851755174, -0.508629699630796,    -0.8586508742123365),
+                new Grad4(-0.03381941603233842,  -0.03381941603233842,  -0.03381941603233842,  -0.9982828964265062),
+                new Grad4(-0.6740059517812944,   -0.3239847771997537,   -0.3239847771997537,    0.5794684678643381),
+                new Grad4(-0.7504883828755602,   -0.4004672082940195,    0.15296486218853164,   0.5029860367700724),
+                new Grad4(-0.7504883828755602,    0.15296486218853164,  -0.4004672082940195,    0.5029860367700724),
+                new Grad4(-0.8828161875373585,    0.08164729285680945,   0.08164729285680945,   0.4553054119602712),
+                new Grad4(-0.4553054119602712,   -0.08164729285680945,  -0.08164729285680945,   0.8828161875373585),
+                new Grad4(-0.5029860367700724,   -0.15296486218853164,   0.4004672082940195,    0.7504883828755602),
+                new Grad4(-0.5029860367700724,    0.4004672082940195,   -0.15296486218853164,   0.7504883828755602),
+                new Grad4(-0.5794684678643381,    0.3239847771997537,    0.3239847771997537,    0.6740059517812944),
+                new Grad4(-0.3239847771997537,   -0.6740059517812944,   -0.3239847771997537,    0.5794684678643381),
+                new Grad4(-0.4004672082940195,   -0.7504883828755602,    0.15296486218853164,   0.5029860367700724),
+                new Grad4( 0.15296486218853164,  -0.7504883828755602,   -0.4004672082940195,    0.5029860367700724),
+                new Grad4( 0.08164729285680945,  -0.8828161875373585,    0.08164729285680945,   0.4553054119602712),
+                new Grad4(-0.08164729285680945,  -0.4553054119602712,   -0.08164729285680945,   0.8828161875373585),
+                new Grad4(-0.15296486218853164,  -0.5029860367700724,    0.4004672082940195,    0.7504883828755602),
+                new Grad4( 0.4004672082940195,   -0.5029860367700724,   -0.15296486218853164,   0.7504883828755602),
+                new Grad4( 0.3239847771997537,   -0.5794684678643381,    0.3239847771997537,    0.6740059517812944),
+                new Grad4(-0.3239847771997537,   -0.3239847771997537,   -0.6740059517812944,    0.5794684678643381),
+                new Grad4(-0.4004672082940195,    0.15296486218853164,  -0.7504883828755602,    0.5029860367700724),
+                new Grad4( 0.15296486218853164,  -0.4004672082940195,   -0.7504883828755602,    0.5029860367700724),
+                new Grad4( 0.08164729285680945,   0.08164729285680945,  -0.8828161875373585,    0.4553054119602712),
+                new Grad4(-0.08164729285680945,  -0.08164729285680945,  -0.4553054119602712,    0.8828161875373585),
+                new Grad4(-0.15296486218853164,   0.4004672082940195,   -0.5029860367700724,    0.7504883828755602),
+                new Grad4( 0.4004672082940195,   -0.15296486218853164,  -0.5029860367700724,    0.7504883828755602),
+                new Grad4( 0.3239847771997537,    0.3239847771997537,   -0.5794684678643381,    0.6740059517812944),
+                new Grad4(-0.6740059517812944,   -0.3239847771997537,    0.5794684678643381,   -0.3239847771997537),
+                new Grad4(-0.7504883828755602,   -0.4004672082940195,    0.5029860367700724,    0.15296486218853164),
+                new Grad4(-0.7504883828755602,    0.15296486218853164,   0.5029860367700724,   -0.4004672082940195),
+                new Grad4(-0.8828161875373585,    0.08164729285680945,   0.4553054119602712,    0.08164729285680945),
+                new Grad4(-0.4553054119602712,   -0.08164729285680945,   0.8828161875373585,   -0.08164729285680945),
+                new Grad4(-0.5029860367700724,   -0.15296486218853164,   0.7504883828755602,    0.4004672082940195),
+                new Grad4(-0.5029860367700724,    0.4004672082940195,    0.7504883828755602,   -0.15296486218853164),
+                new Grad4(-0.5794684678643381,    0.3239847771997537,    0.6740059517812944,    0.3239847771997537),
+                new Grad4(-0.3239847771997537,   -0.6740059517812944,    0.5794684678643381,   -0.3239847771997537),
+                new Grad4(-0.4004672082940195,   -0.7504883828755602,    0.5029860367700724,    0.15296486218853164),
+                new Grad4( 0.15296486218853164,  -0.7504883828755602,    0.5029860367700724,   -0.4004672082940195),
+                new Grad4( 0.08164729285680945,  -0.8828161875373585,    0.4553054119602712,    0.08164729285680945),
+                new Grad4(-0.08164729285680945,  -0.4553054119602712,    0.8828161875373585,   -0.08164729285680945),
+                new Grad4(-0.15296486218853164,  -0.5029860367700724,    0.7504883828755602,    0.4004672082940195),
+                new Grad4( 0.4004672082940195,   -0.5029860367700724,    0.7504883828755602,   -0.15296486218853164),
+                new Grad4( 0.3239847771997537,   -0.5794684678643381,    0.6740059517812944,    0.3239847771997537),
+                new Grad4(-0.3239847771997537,   -0.3239847771997537,    0.5794684678643381,   -0.6740059517812944),
+                new Grad4(-0.4004672082940195,    0.15296486218853164,   0.5029860367700724,   -0.7504883828755602),
+                new Grad4( 0.15296486218853164,  -0.4004672082940195,    0.5029860367700724,   -0.7504883828755602),
+                new Grad4( 0.08164729285680945,   0.08164729285680945,   0.4553054119602712,   -0.8828161875373585),
+                new Grad4(-0.08164729285680945,  -0.08164729285680945,   0.8828161875373585,   -0.4553054119602712),
+                new Grad4(-0.15296486218853164,   0.4004672082940195,    0.7504883828755602,   -0.5029860367700724),
+                new Grad4( 0.4004672082940195,   -0.15296486218853164,   0.7504883828755602,   -0.5029860367700724),
+                new Grad4( 0.3239847771997537,    0.3239847771997537,    0.6740059517812944,   -0.5794684678643381),
+                new Grad4(-0.6740059517812944,    0.5794684678643381,   -0.3239847771997537,   -0.3239847771997537),
+                new Grad4(-0.7504883828755602,    0.5029860367700724,   -0.4004672082940195,    0.15296486218853164),
+                new Grad4(-0.7504883828755602,    0.5029860367700724,    0.15296486218853164,  -0.4004672082940195),
+                new Grad4(-0.8828161875373585,    0.4553054119602712,    0.08164729285680945,   0.08164729285680945),
+                new Grad4(-0.4553054119602712,    0.8828161875373585,   -0.08164729285680945,  -0.08164729285680945),
+                new Grad4(-0.5029860367700724,    0.7504883828755602,   -0.15296486218853164,   0.4004672082940195),
+                new Grad4(-0.5029860367700724,    0.7504883828755602,    0.4004672082940195,   -0.15296486218853164),
+                new Grad4(-0.5794684678643381,    0.6740059517812944,    0.3239847771997537,    0.3239847771997537),
+                new Grad4(-0.3239847771997537,    0.5794684678643381,   -0.6740059517812944,   -0.3239847771997537),
+                new Grad4(-0.4004672082940195,    0.5029860367700724,   -0.7504883828755602,    0.15296486218853164),
+                new Grad4( 0.15296486218853164,   0.5029860367700724,   -0.7504883828755602,   -0.4004672082940195),
+                new Grad4( 0.08164729285680945,   0.4553054119602712,   -0.8828161875373585,    0.08164729285680945),
+                new Grad4(-0.08164729285680945,   0.8828161875373585,   -0.4553054119602712,   -0.08164729285680945),
+                new Grad4(-0.15296486218853164,   0.7504883828755602,   -0.5029860367700724,    0.4004672082940195),
+                new Grad4( 0.4004672082940195,    0.7504883828755602,   -0.5029860367700724,   -0.15296486218853164),
+                new Grad4( 0.3239847771997537,    0.6740059517812944,   -0.5794684678643381,    0.3239847771997537),
+                new Grad4(-0.3239847771997537,    0.5794684678643381,   -0.3239847771997537,   -0.6740059517812944),
+                new Grad4(-0.4004672082940195,    0.5029860367700724,    0.15296486218853164,  -0.7504883828755602),
+                new Grad4( 0.15296486218853164,   0.5029860367700724,   -0.4004672082940195,   -0.7504883828755602),
+                new Grad4( 0.08164729285680945,   0.4553054119602712,    0.08164729285680945,  -0.8828161875373585),
+                new Grad4(-0.08164729285680945,   0.8828161875373585,   -0.08164729285680945,  -0.4553054119602712),
+                new Grad4(-0.15296486218853164,   0.7504883828755602,    0.4004672082940195,   -0.5029860367700724),
+                new Grad4( 0.4004672082940195,    0.7504883828755602,   -0.15296486218853164,  -0.5029860367700724),
+                new Grad4( 0.3239847771997537,    0.6740059517812944,    0.3239847771997537,   -0.5794684678643381),
+                new Grad4( 0.5794684678643381,   -0.6740059517812944,   -0.3239847771997537,   -0.3239847771997537),
+                new Grad4( 0.5029860367700724,   -0.7504883828755602,   -0.4004672082940195,    0.15296486218853164),
+                new Grad4( 0.5029860367700724,   -0.7504883828755602,    0.15296486218853164,  -0.4004672082940195),
+                new Grad4( 0.4553054119602712,   -0.8828161875373585,    0.08164729285680945,   0.08164729285680945),
+                new Grad4( 0.8828161875373585,   -0.4553054119602712,   -0.08164729285680945,  -0.08164729285680945),
+                new Grad4( 0.7504883828755602,   -0.5029860367700724,   -0.15296486218853164,   0.4004672082940195),
+                new Grad4( 0.7504883828755602,   -0.5029860367700724,    0.4004672082940195,   -0.15296486218853164),
+                new Grad4( 0.6740059517812944,   -0.5794684678643381,    0.3239847771997537,    0.3239847771997537),
+                new Grad4( 0.5794684678643381,   -0.3239847771997537,   -0.6740059517812944,   -0.3239847771997537),
+                new Grad4( 0.5029860367700724,   -0.4004672082940195,   -0.7504883828755602,    0.15296486218853164),
+                new Grad4( 0.5029860367700724,    0.15296486218853164,  -0.7504883828755602,   -0.4004672082940195),
+                new Grad4( 0.4553054119602712,    0.08164729285680945,  -0.8828161875373585,    0.08164729285680945),
+                new Grad4( 0.8828161875373585,   -0.08164729285680945,  -0.4553054119602712,   -0.08164729285680945),
+                new Grad4( 0.7504883828755602,   -0.15296486218853164,  -0.5029860367700724,    0.4004672082940195),
+                new Grad4( 0.7504883828755602,    0.4004672082940195,   -0.5029860367700724,   -0.15296486218853164),
+                new Grad4( 0.6740059517812944,    0.3239847771997537,   -0.5794684678643381,    0.3239847771997537),
+                new Grad4( 0.5794684678643381,   -0.3239847771997537,   -0.3239847771997537,   -0.6740059517812944),
+                new Grad4( 0.5029860367700724,   -0.4004672082940195,    0.15296486218853164,  -0.7504883828755602),
+                new Grad4( 0.5029860367700724,    0.15296486218853164,  -0.4004672082940195,   -0.7504883828755602),
+                new Grad4( 0.4553054119602712,    0.08164729285680945,   0.08164729285680945,  -0.8828161875373585),
+                new Grad4( 0.8828161875373585,   -0.08164729285680945,  -0.08164729285680945,  -0.4553054119602712),
+                new Grad4( 0.7504883828755602,   -0.15296486218853164,   0.4004672082940195,   -0.5029860367700724),
+                new Grad4( 0.7504883828755602,    0.4004672082940195,   -0.15296486218853164,  -0.5029860367700724),
+                new Grad4( 0.6740059517812944,    0.3239847771997537,    0.3239847771997537,   -0.5794684678643381),
+                new Grad4( 0.03381941603233842,   0.03381941603233842,   0.03381941603233842,   0.9982828964265062),
+                new Grad4(-0.044802370851755174, -0.044802370851755174,  0.508629699630796,     0.8586508742123365),
+                new Grad4(-0.044802370851755174,  0.508629699630796,    -0.044802370851755174,  0.8586508742123365),
+                new Grad4(-0.12128480194602098,   0.4321472685365301,    0.4321472685365301,    0.7821684431180708),
+                new Grad4( 0.508629699630796,    -0.044802370851755174, -0.044802370851755174,  0.8586508742123365),
+                new Grad4( 0.4321472685365301,   -0.12128480194602098,   0.4321472685365301,    0.7821684431180708),
+                new Grad4( 0.4321472685365301,    0.4321472685365301,   -0.12128480194602098,   0.7821684431180708),
+                new Grad4( 0.37968289875261624,   0.37968289875261624,   0.37968289875261624,   0.753341017856078),
+                new Grad4( 0.03381941603233842,   0.03381941603233842,   0.9982828964265062,    0.03381941603233842),
+                new Grad4(-0.044802370851755174,  0.044802370851755174,  0.8586508742123365,    0.508629699630796),
+                new Grad4(-0.044802370851755174,  0.508629699630796,     0.8586508742123365,   -0.044802370851755174),
+                new Grad4(-0.12128480194602098,   0.4321472685365301,    0.7821684431180708,    0.4321472685365301),
+                new Grad4( 0.508629699630796,    -0.044802370851755174,  0.8586508742123365,   -0.044802370851755174),
+                new Grad4( 0.4321472685365301,   -0.12128480194602098,   0.7821684431180708,    0.4321472685365301),
+                new Grad4( 0.4321472685365301,    0.4321472685365301,    0.7821684431180708,   -0.12128480194602098),
+                new Grad4( 0.37968289875261624,   0.37968289875261624,   0.753341017856078,     0.37968289875261624),
+                new Grad4( 0.03381941603233842,   0.9982828964265062,    0.03381941603233842,   0.03381941603233842),
+                new Grad4(-0.044802370851755174,  0.8586508742123365,   -0.044802370851755174,  0.508629699630796),
+                new Grad4(-0.044802370851755174,  0.8586508742123365,    0.508629699630796,    -0.044802370851755174),
+                new Grad4(-0.12128480194602098,   0.7821684431180708,    0.4321472685365301,    0.4321472685365301),
+                new Grad4( 0.508629699630796,     0.8586508742123365,   -0.044802370851755174, -0.044802370851755174),
+                new Grad4( 0.4321472685365301,    0.7821684431180708,   -0.12128480194602098,   0.4321472685365301),
+                new Grad4( 0.4321472685365301,    0.7821684431180708,    0.4321472685365301,   -0.12128480194602098),
+                new Grad4( 0.37968289875261624,   0.753341017856078,     0.37968289875261624,   0.37968289875261624),
+                new Grad4( 0.9982828964265062,    0.03381941603233842,   0.03381941603233842,   0.03381941603233842),
+                new Grad4( 0.8586508742123365,   -0.044802370851755174, -0.044802370851755174,  0.508629699630796),
+                new Grad4( 0.8586508742123365,   -0.044802370851755174,  0.508629699630796,    -0.044802370851755174),
+                new Grad4( 0.7821684431180708,   -0.12128480194602098,   0.4321472685365301,    0.4321472685365301),
+                new Grad4( 0.8586508742123365,    0.508629699630796,    -0.044802370851755174, -0.044802370851755174),
+                new Grad4( 0.7821684431180708,    0.4321472685365301,   -0.12128480194602098,   0.4321472685365301),
+                new Grad4( 0.7821684431180708,    0.4321472685365301,    0.4321472685365301,   -0.12128480194602098),
+                new Grad4( 0.753341017856078,     0.37968289875261624,   0.37968289875261624,   0.37968289875261624)
+            };
+            for (int i = 0; i < grad4.Length; i++)
+            {
+                grad4[i].dx /= N4; grad4[i].dy /= N4; grad4[i].dz /= N4; grad4[i].dw /= N4;
+            }
+            for (int i = 0; i < PSIZE; i++)
+            {
+                GRADIENTS_4D[i] = grad4[i % grad4.Length];
+            }
         }
-    
-        private class LatticePoint2D
+
+        private struct LatticePoint2D
         {
             public int xsv, ysv;
             public double dx, dy;
@@ -415,7 +797,29 @@ namespace Noise
             }
         }
 
-        private class Grad2
+        private struct LatticePoint4D
+        {
+            public int xsv, ysv, zsv, wsv;
+            public double dx, dy, dz, dw;
+            public double xsi, ysi, zsi, wsi;
+            public double ssiDelta;
+            public LatticePoint4D(int xsv, int ysv, int zsv, int wsv)
+            {
+                this.xsv = xsv + 409; this.ysv = ysv + 409; this.zsv = zsv + 409; this.wsv = wsv + 409;
+                double ssv = (xsv + ysv + zsv + wsv) * 0.309016994374947;
+                this.dx = -xsv - ssv;
+                this.dy = -ysv - ssv;
+                this.dz = -zsv - ssv;
+                this.dw = -wsv - ssv;
+                this.xsi = xsi = 0.2 - xsv;
+                this.ysi = ysi = 0.2 - ysv;
+                this.zsi = zsi = 0.2 - zsv;
+                this.wsi = wsi = 0.2 - wsv;
+                this.ssiDelta = (0.8 - xsv - ysv - zsv - wsv) * 0.309016994374947;
+            }
+        }
+
+        private struct Grad2
         {
             public double dx, dy;
             public Grad2(double dx, double dy)
@@ -424,12 +828,21 @@ namespace Noise
             }
         }
 
-        private class Grad3
+        private struct Grad3
         {
             public double dx, dy, dz;
             public Grad3(double dx, double dy, double dz)
             {
                 this.dx = dx; this.dy = dy; this.dz = dz;
+            }
+        }
+
+        private struct Grad4
+        {
+            public double dx, dy, dz, dw;
+            public Grad4(double dx, double dy, double dz, double dw)
+            {
+                this.dx = dx; this.dy = dy; this.dz = dz; this.dw = dw;
             }
         }
     }

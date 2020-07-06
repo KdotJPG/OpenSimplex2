@@ -3,8 +3,8 @@
  *
  * - 2D is standard simplex, modified to support larger kernels.
  *   Implemented using a lookup table.
- * - 3D is "Re-oriented 8-point BCC noise" which constructs an
- *   isomorphic BCC lattice in a much different way than usual.
+ * - 3D is "Re-oriented 8-point BCC noise" which constructs a
+ *   congruent BCC lattice in a much different way than usual.
  * - 4D uses a naïve pregenerated lookup table, and averages out
  *   to the expected performance.
  *
@@ -260,7 +260,7 @@ public class OpenSimplex2S {
 		
 		double xyz = x + y + z;
 		double ww = w * 1.118033988749894;
-		double s2 = xyz / -6.0 + ww;
+		double s2 = xyz * -0.16666666666666666 + ww;
 		double xs = x + s2, ys = y + s2, zs = z + s2, ws = -0.5 * xyz + ww;
 		
 		return noise4_Base(xs, ys, zs, ws);
@@ -269,6 +269,8 @@ public class OpenSimplex2S {
 	/**
 	 * 4D SuperSimplex noise base.
 	 * Using ultra-simple 4x4x4x4 lookup partitioning.
+	 * This isn't as elegant or SIMD/GPU/etc. portable as other approaches,
+	 * but it does compete performance-wise with optimized OpenSimplex1.
 	 */
 	private double noise4_Base(double xs, double ys, double zs, double ws) {
 		double value = 0;
@@ -402,7 +404,6 @@ public class OpenSimplex2S {
 			cD.nextOnFailure = cD.nextOnSuccess = null;
 			
 			LOOKUP_3D[i] = c0;
-			
 		}
 		
 		int[][] lookup4DPregen = {
@@ -717,30 +718,30 @@ public class OpenSimplex2S {
 	 * Gradients
 	 */
 	
-	public static class Grad2 {
+	private static class Grad2 {
 		double dx, dy;
 		public Grad2(double dx, double dy) {
 			this.dx = dx; this.dy = dy;
 		}
 	}
 	
-	public static class Grad3 {
+	private static class Grad3 {
 		double dx, dy, dz;
 		public Grad3(double dx, double dy, double dz) {
 			this.dx = dx; this.dy = dy; this.dz = dz;
 		}
 	}
 	
-	public static class Grad4 {
+	private static class Grad4 {
 		double dx, dy, dz, dw;
 		public Grad4(double dx, double dy, double dz,  double dw) {
 			this.dx = dx; this.dy = dy; this.dz = dz; this.dw = dw;
 		}
 	}
 	
-	public static final double N2 = 0.05481866495625118;
-	public static final double N3 = 0.2781926117527186;
-	public static final double N4 = 0.11127401889945551;
+	private static final double N2 = 0.05481866495625118;
+	private static final double N3 = 0.2781926117527186;
+	private static final double N4 = 0.11127401889945551;
 	private static final Grad2[] GRADIENTS_2D;
 	private static final Grad3[] GRADIENTS_3D;
 	private static final Grad4[] GRADIENTS_4D;

@@ -4,7 +4,7 @@ Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D no
 
 * The provided 3D function in **OpenSimplex2S** (OpenSimplex 2, smooth version / "SuperSimplex") is about as fast as optimized OpenSimplex, but has better uniformity.
 
-* The provided 3D function in **OpenSimplex2F** (OpenSimplex 2, faster version / "Fast Simplex-Style Noise") is about as fast as common Simplex noise implementations, but uses a much different process.
+* The provided 3D function in **OpenSimplex2F** (OpenSimplex 2, faster version) is about as fast as common Simplex noise implementations, but uses a much different process.
 
 * The 2D functions aren't intended to represent new developments in the same vein as the 3D functions. They are just the logical pairings. Both 2D functions are implemented using lookup tables, use lattice-symmetric gradient sets, and perform similar to or faster than the average.
 
@@ -20,7 +20,6 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 
 #### TODO:
 
-* 4D OpenSimplex2F and OpenSimplex2S
 * More language ports
 * Move radius into unified constant (for Area Generators in particular)
 * Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
@@ -28,16 +27,18 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 #### Maybe TODO:
 
 * Create combined OpenSimplex2F and OpenSimplex2S in one file, reducing repetition for someone who needs both.
-* Include octave summation, ridged noise, etc.
-* Exponentially-distributed noise ([source of idea](http://jcgt.org/published/0004/02/01/))
-* Simultaneous multi-instance evaluation
+* Include octave summation (fBm), ridged noise, etc.
+* Simultaneous multi-instance evaluation.
 * Disc/Ball-output noise (Outputs 2D/3D/etc. vector for more directionally-uniform domain warping)
 * Tileable 2D noise (slightly mis-skewed triangular grid which repeats properly over a desired rectangle)
 * Tileable 3D noise (using an extension of the above)
 * Tileable 3D noise (exact, using the "classic" lattice orientation)
 
 #### Change Log
-* Replaced individual renders in readme with consolidated renders.
+* Shortened lookup table for Simplex/OpenSimplex2F 4D (July 5, 2020)
+* Add 4D to OpenSimplex2F Java/C#, port OpenSimplex2S 4D to C#. (July 5, 2020)
+* Add 4D to OpenSimplex2S Java. (Apr 30, 2020)
+* Replaced individual renders in readme with consolidated renders. (Feb 10, 2020)
 * Replaced 12-direction 2D gradient set with a 24-direction set, to reduce visible feature repetition in thresholded single-octave 2D noise. (Feb 10, 2020)
 * Renamed filenames FastSimplexStyleNoise to OpenSimplex2F, and SuperSimplexNoise to OpenSimplex2S. (Feb 10, 2020)
 * Moved legacy OpenSimplex into legacy directories. (Feb 10, 2020)
@@ -75,12 +76,30 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * OpenSimplex2F and OpenSimplex2S, 2D slices of 3D in the classic lattice orientation, look decent but are less ideal for X/Y planes being the primary focus.
 * This Updated OpenSimplex render appears to show less directional bias than original OpenSimplex.
 
-### 4D OpenSimplex
+### 4D Noise (XYBeforeZW Orientation)
 
-![OpenSimplexRenders 4D](images/rendersOSN4D.png?raw=true)
+![Renders 4D](images/renders4Dpf.png?raw=true)
 
-* Updated OpenSimplex 4D appears to have, to a small degree, less waviness inconsistency down the main diagonal.
-* It would be interesting to create a noise4_XYBeforeZW and compare the result.
+* OpenSimplex2S 4D has higher apparent contrast than original OpenSimplex.
+* OpenSimplex2F 4D has a very dotty appearance. Fine for fBm but probably not ridged noise.
+
+### 4D Noise (XYZBeforeW Orientation)
+
+![Renders 4D](images/renders4Dp3f.png?raw=true)
+
+* 2D slices look fine, but this lattice rotation is most intended for texturing 3D objects with an additional time variable.
+
+### 4D Noise (Classic Orientation)
+
+![Renders 4D](images/renders4Dc.png?raw=true)
+
+* OpenSimplex2F has the most noticeable diagonal artifacts, followed by Old OpenSimplex.
+
+### 4D Noise (Torus Mapping)
+
+![Renders 4D](images/renders4Dtorus.png?raw=true)
+
+* Seamless tileable 2D noise from 4D, mapped using noise4(r sin x, r cos x, r sin y, r cos y)
 
 ## Public Domain Dedication
 
