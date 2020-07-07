@@ -1,6 +1,6 @@
 # OpenSimplex 2
 
-Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D and 3D noise. 4D noise is coming!
+Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D, 3D, and 4D noise.
 
 * The provided 3D and 4D functions in **OpenSimplex2S** (OpenSimplex 2, smooth version / "SuperSimplex") are about as fast as optimized OpenSimplex, but have better uniformity.
 
