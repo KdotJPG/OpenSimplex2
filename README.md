@@ -23,6 +23,7 @@ The classes in [java/areagen](https://github.com/KdotJPG/New-Simplex-Style-Gradi
 * More language ports
 * Move radius into unified constant (for Area Generators in particular)
 * Pull some of the explanation from [the reddit post](https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/) into this readme.
+* Version of OpenSimplex2F with `r^2 = 0.6` instead of 0.5 for smoother noise. 0.6 was used in many Simplex implementations in the past. While it technically produces discontinuities, they are incredibly small and not visible in most applications. The OpenSimplex2F 3D implementation needs modifications to the algorithm, to work properly with an oversized radius.
 
 #### Maybe TODO:
 
