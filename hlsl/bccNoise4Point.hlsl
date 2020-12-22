@@ -1,5 +1,5 @@
-#ifndef __dcc_noise_hlsl_
-#define __dcc_noise_hlsl_
+#ifndef __bcc_noise_4_hlsl_
+#define __bcc_noise_4_hlsl_
 
 /////////////// K.jpg's Simplex-like Re-oriented 4-Point BCC Noise ///////////////
 //////////////////// Output: float4(dF/dx, dF/dy, dF/dz, value) ////////////////////
