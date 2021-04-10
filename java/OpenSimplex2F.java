@@ -474,10 +474,10 @@ public class OpenSimplex2F {
 			this.dy = -ysv - ssv;
 			this.dz = -zsv - ssv;
 			this.dw = -wsv - ssv;
-			this.xsi = xsi = 0.2 - xsv;
-			this.ysi = ysi = 0.2 - ysv;
-			this.zsi = zsi = 0.2 - zsv;
-			this.wsi = wsi = 0.2 - wsv;
+			this.xsi = 0.2 - xsv;
+			this.ysi = 0.2 - ysv;
+			this.zsi = 0.2 - zsv;
+			this.wsi = 0.2 - wsv;
 			this.ssiDelta = (0.8 - xsv - ysv - zsv - wsv) * 0.309016994374947;
 		}
 	}
