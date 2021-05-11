@@ -307,10 +307,10 @@ namespace Noise
             double ssi = (xsi + ysi + zsi + wsi) * -0.138196601125011;
             double xi = xsi + ssi, yi = ysi + ssi, zi = zsi + ssi, wi = wsi + ssi;
 
-            int index = ((fastFloor(xs * 4) & 3) << 0)
-                | ((fastFloor(ys * 4) & 3) << 2)
-                | ((fastFloor(zs * 4) & 3) << 4)
-                | ((fastFloor(ws * 4) & 3) << 6);
+            int index = (((xsb * 4) & 3) << 0)
+                | (((ysb * 4) & 3) << 2)
+                | (((zsb * 4) & 3) << 4)
+                | (((wsb * 4) & 3) << 6);
 
             // Point contributions
             foreach (LatticePoint4D c in LOOKUP_4D[index])
