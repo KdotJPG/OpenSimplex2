@@ -1,5 +1,5 @@
-////////////////// K.jpg's Smooth Re-oriented 8-Point BCC Noise //////////////////
-//////////////////// Output: vec4(dF/dx, dF/dy, dF/dz, value) ////////////////////
+/////////////// K.jpg's Re-oriented 8-Point BCC Noise (OpenSimplex2S) ////////////////
+////////////////////// Output: vec4(dF/dx, dF/dy, dF/dz, value) //////////////////////
 
 // Borrowed from Stefan Gustavson's noise code
 vec4 permute(vec4 t) {
@@ -35,7 +35,7 @@ vec3 grad(float hash) {
 }
 
 // BCC lattice split up into 2 cube lattices
-vec4 bccNoiseDerivativesPart(vec3 X) {
+vec4 openSimplex2SDerivativesPart(vec3 X) {
     vec3 b = floor(X);
     vec4 i4 = vec4(X - b, 2.5);
     
@@ -68,17 +68,17 @@ vec4 bccNoiseDerivativesPart(vec3 X) {
 
 // Rotates domain, but preserve shape. Hides grid better in cardinal slices.
 // Good for texturing 3D objects with lots of flat parts along cardinal planes.
-vec4 bccNoiseDerivatives_XYZ(vec3 X) {
+vec4 openSimplex2SDerivatives_Classical(vec3 X) {
     X = dot(X, vec3(2.0/3.0)) - X;
     
-    vec4 result = bccNoiseDerivativesPart(X) + bccNoiseDerivativesPart(X + 144.5);
+    vec4 result = openSimplex2SDerivativesPart(X) + openSimplex2SDerivativesPart(X + 144.5);
     
     return vec4(dot(result.xyz, vec3(2.0/3.0)) - result.xyz, result.w);
 }
 
 // Gives X and Y a triangular alignment, and lets Z move up the main diagonal.
 // Might be good for terrain, or a time varying X/Y plane. Z repeats.
-vec4 bccNoiseDerivatives_PlaneFirst(vec3 X) {
+vec4 openSimplex2SDerivatives_ImproveXYPlanes(vec3 X) {
     
     // Not a skew transform.
     mat3 orthonormalMap = mat3(
@@ -87,7 +87,7 @@ vec4 bccNoiseDerivatives_PlaneFirst(vec3 X) {
         0.577350269189626, 0.577350269189626, 0.577350269189626);
     
     X = orthonormalMap * X;
-    vec4 result = bccNoiseDerivativesPart(X) + bccNoiseDerivativesPart(X + 144.5);
+    vec4 result = openSimplex2SDerivativesPart(X) + openSimplex2SDerivativesPart(X + 144.5);
     
     return vec4(result.xyz * orthonormalMap, result.w);
 }
