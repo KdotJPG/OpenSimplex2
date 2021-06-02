@@ -1,5 +1,5 @@
-/////////////// K.jpg's Simplex-like Re-oriented 4-Point BCC Noise ///////////////
-//////////////////// Output: vec4(dF/dx, dF/dy, dF/dz, value) ////////////////////
+//////////////// K.jpg's Re-oriented 4-Point BCC Noise (OpenSimplex2) ////////////////
+////////////////////// Output: vec4(dF/dx, dF/dy, dF/dz, value) //////////////////////
 
 // Inspired by Stefan Gustavson's noise
 vec4 permute(vec4 t) {
@@ -35,7 +35,7 @@ vec3 grad(float hash) {
 }
 
 // BCC lattice split up into 2 cube lattices
-vec4 bccNoiseBase(vec3 X) {
+vec4 openSimplex2Base(vec3 X) {
     
     // First half-lattice, closest edge
     vec3 v1 = round(X);
@@ -75,15 +75,15 @@ vec4 bccNoiseBase(vec3 X) {
 }
 
 // Use this if you don't want Z to look different from X and Y
-vec4 bccNoiseClassic(vec3 X) {
+vec4 openSimplex2_Classical(vec3 X) {
     
     // Rotate around the main diagonal. Not a skew transform.
-    vec4 result = bccNoiseBase(dot(X, vec3(2.0/3.0)) - X);
+    vec4 result = openSimplex2Base(dot(X, vec3(2.0/3.0)) - X);
     return vec4(dot(result.xyz, vec3(2.0/3.0)) - result.xyz, result.w);
 }
 
 // Use this if you want to show X and Y in a plane, and use Z for time, etc.
-vec4 bccNoisePlaneFirst(vec3 X) {
+vec4 openSimplex2_ImproveXYPlanes(vec3 X) {
     
     // Rotate so Z points down the main diagonal. Not a skew transform.
     mat3 orthonormalMap = mat3(
@@ -91,7 +91,7 @@ vec4 bccNoisePlaneFirst(vec3 X) {
         -0.211324865405187, 0.788675134594813, -0.577350269189626,
         0.577350269189626, 0.577350269189626, 0.577350269189626);
     
-    vec4 result = bccNoiseBase(orthonormalMap * X);
+    vec4 result = openSimplex2Base(orthonormalMap * X);
     return vec4(result.xyz * orthonormalMap, result.w);
 }
 
