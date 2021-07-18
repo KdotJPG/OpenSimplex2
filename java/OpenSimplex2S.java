@@ -774,7 +774,6 @@ public class OpenSimplex2S {
 			new Grad2(-0.38268343236509,   0.923879532511287),
 			new Grad2(-0.130526192220052,  0.99144486137381)
 		};
-		Grad2[] grad2XBeforeY = new Grad2[grad2.length];
 		for (int i = 0; i < grad2.length; i++) {
 			grad2[i].dx /= N2; grad2[i].dy /= N2;
 		}
