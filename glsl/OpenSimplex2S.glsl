@@ -66,9 +66,8 @@ vec4 openSimplex2SDerivativesPart(vec3 X) {
     return vec4(derivative, dot(aaaa, extrapolations));
 }
 
-// Rotates domain, but preserve shape. Hides grid better in cardinal slices.
-// Good for texturing 3D objects with lots of flat parts along cardinal planes.
-vec4 openSimplex2SDerivatives_Classical(vec3 X) {
+// Use this if you don't want Z to look different from X and Y
+vec4 openSimplex2SDerivatives_Conventional(vec3 X) {
     X = dot(X, vec3(2.0/3.0)) - X;
     
     vec4 result = openSimplex2SDerivativesPart(X) + openSimplex2SDerivativesPart(X + 144.5);
@@ -76,9 +75,8 @@ vec4 openSimplex2SDerivatives_Classical(vec3 X) {
     return vec4(dot(result.xyz, vec3(2.0/3.0)) - result.xyz, result.w);
 }
 
-// Gives X and Y a triangular alignment, and lets Z move up the main diagonal.
-// Might be good for terrain, or a time varying X/Y plane. Z repeats.
-vec4 openSimplex2SDerivatives_ImproveXYPlanes(vec3 X) {
+// Use this if you want to show X and Y in a plane, then use Z for time, vertical, etc.
+vec4 openSimplex2SDerivatives_ImproveXY(vec3 X) {
     
     // Not a skew transform.
     mat3 orthonormalMap = mat3(
