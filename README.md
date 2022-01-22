@@ -10,7 +10,7 @@ Successors to OpenSimplex Noise, plus updated OpenSimplex. Includes 2D, 3D, and 
 
 * All functions are given gradient sets that are symmetric with the lattice, but don't cause neighboring vertex gradients to constructively interfere.
 
-* Updated Legacy OpenSimplex with new gradient sets is included in `_old/java` and `_old/csharp`. Older implementations of OpenSimplex2 can also be found in the `_old` directory.
+* Updated Legacy OpenSimplex with new gradient sets is included in `_old/java/legacy` and `_old/csharp/legacy`. Older implementations of OpenSimplex2 can also be found in the `_old` directory.
 
 Note: area-generators have been moved to [the original repository](https://github.com/KdotJPG/Noise-VertexQueue-AreaGen)
 
@@ -100,4 +100,4 @@ Note: area-generators have been moved to [the original repository](https://githu
 
 ## Public Domain Dedication
 
-This is free and unencumbered software. The majority of files are released under CC0. Where marked, files in certain directories fall under UNLICENSE instead, as they came from Pull Requests when that was the active license for the repository. To the best of my non-lawyer knowledge, no patent claims cover anything implemented here (not legal advice). Please use this software to make cool things, rather than to make patents! Enjoy.
+This is free and unencumbered software. The majority of files are released under CC0. Where marked, files in certain directories fall under UNLICENSE instead, as they came from Pull Requests when that was the active license for the repository (or were otherwise based off of UNLICENSE code, i.e. legacy OpenSimplex with DigitalShadow's lookup tables). To the best of my non-lawyer knowledge, no patent claims cover anything implemented here (not legal advice). Please use this software to make cool things, rather than to make patents! Enjoy.
