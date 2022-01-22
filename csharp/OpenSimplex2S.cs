@@ -1,8 +1,7 @@
 /**
  * K.jpg's OpenSimplex 2, smooth variant ("SuperSimplex")
  * 
- * Note: If using this in Unity's Burst compiler,
- * change LatticeVertex4D at the bottom from a class to a struct.
+ * Note: Not yet compatible with Unity Burst.
  */
 
 using System.Runtime.CompilerServices;
