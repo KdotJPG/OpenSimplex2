@@ -87,12 +87,12 @@ float4 openSimplex2SDerivativesPart(float3 X) {
 	float3 g3 = grad(hashes.z); float3 g4 = grad(hashes.w);
 	float4 extrapolations = float4(dot(d1, g1), dot(d2, g2), dot(d3, g3), dot(d4, g4));
 
-	float3x4 derivativeMatrix = { d1, d2, d3, d4 };
-	float3x4 gradiantMatrix = { g1, g2, g3, g4 };
+	float4x3 derivativeMatrix = { d1, d2, d3, d4 };
+	float4x3 gradiantMatrix = { g1, g2, g3, g4 };
 
 	// Derivatives of the noise
-	float3 derivative = -8.0 * mul(derivativeMatrix, (aa * a * extrapolations))
-		+ mul(gradiantMatrix, aaaa);
+	float3 derivative = -8.0 * mul(aa * a * extrapolations, derivativeMatrix)
+		+ mul(aaaa, gradiantMatrix);
 
 	// Return it all as a float4
 	return float4(derivative, dot(aaaa, extrapolations));
@@ -115,10 +115,10 @@ float4 openSimplex2SDerivatives_ImproveXY(float3 X) {
 		-0.211324865405187, 0.788675134594813, -0.577350269189626,
 		0.577350269189626, 0.577350269189626, 0.577350269189626 };
 
-	X = mul(orthonormalMap, X);
+	X = mul(X, orthonormalMap);
 	float4 result = openSimplex2SDerivativesPart(X) + openSimplex2SDerivativesPart(X + 144.5);
 
-	return float4(mul(result.xyz, orthonormalMap), result.w);
+	return float4(mul(orthonormalMap, result.xyz), result.w);
 }
 
 //////////////////////////////// End noise code ////////////////////////////////
