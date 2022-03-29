@@ -88,11 +88,11 @@ float4 openSimplex2SDerivativesPart(float3 X) {
 	float4 extrapolations = float4(dot(d1, g1), dot(d2, g2), dot(d3, g3), dot(d4, g4));
 
 	float4x3 derivativeMatrix = { d1, d2, d3, d4 };
-	float4x3 gradiantMatrix = { g1, g2, g3, g4 };
+	float4x3 gradientMatrix = { g1, g2, g3, g4 };
 
 	// Derivatives of the noise
 	float3 derivative = -8.0 * mul(aa * a * extrapolations, derivativeMatrix)
-		+ mul(aaaa, gradiantMatrix);
+		+ mul(aaaa, gradientMatrix);
 
 	// Return it all as a float4
 	return float4(derivative, dot(aaaa, extrapolations));
