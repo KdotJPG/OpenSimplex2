@@ -1,5 +1,3 @@
-#![allow(non_snake_case)]
-
 /*!
     K.jpg's OpenSimplex 2, smooth variant ("SuperSimplex")
 */
