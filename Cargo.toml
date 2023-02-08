@@ -1,0 +1,20 @@
+[package]
+name = "opensimplex2"
+version = "1.0.0"
+edition = "2021"
+
+description = "Port of OpenSimplex2"
+authors = ["KdotJPG"]
+license = "CC0-1.0"
+repository = "https://github.com/KdotJPG/OpenSimplex2"
+categories = ["algorithms"]
+keywords = ["OpenSimplex", "noise"]
+
+# omit java, etc. from .crate file
+include = [
+	"Cargo.toml",
+	"rust/*.rs",
+]
+
+[lib]
+path = "rust/lib.rs"
