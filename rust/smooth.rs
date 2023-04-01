@@ -302,9 +302,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
         * (a0 * a0)
         * grad3(
             seed,
-            xrbp + Wrapping(xNMask as i64) & Wrapping(PRIME_X),
-            yrbp + Wrapping(yNMask as i64) & Wrapping(PRIME_Y),
-            zrbp + Wrapping(zNMask as i64) & Wrapping(PRIME_Z),
+            xrbp + (Wrapping(xNMask as i64) & Wrapping(PRIME_X)),
+            yrbp + (Wrapping(yNMask as i64) & Wrapping(PRIME_Y)),
+            zrbp + (Wrapping(zNMask as i64) & Wrapping(PRIME_Z)),
             x0,
             y0,
             z0,
@@ -346,9 +346,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
             * (a2 * a2)
             * grad3(
                 seed,
-                xrbp + Wrapping(!xNMask as i64) & Wrapping(PRIME_X),
-                yrbp + Wrapping(yNMask as i64) & Wrapping(PRIME_Y),
-                zrbp + Wrapping(zNMask as i64) & Wrapping(PRIME_Z),
+                xrbp + (Wrapping(!xNMask as i64) & Wrapping(PRIME_X)),
+                yrbp + (Wrapping(yNMask as i64) & Wrapping(PRIME_Y)),
+                zrbp + (Wrapping(zNMask as i64) & Wrapping(PRIME_Z)),
                 x2,
                 y2,
                 z2,
@@ -363,9 +363,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
                 * (a3 * a3)
                 * grad3(
                     seed,
-                    xrbp + Wrapping(xNMask as i64) & Wrapping(PRIME_X),
-                    yrbp + Wrapping(!yNMask as i64) & Wrapping(PRIME_Y),
-                    zrbp + Wrapping(!zNMask as i64) & Wrapping(PRIME_Z),
+                    xrbp + (Wrapping(xNMask as i64) & Wrapping(PRIME_X)),
+                    yrbp + (Wrapping(!yNMask as i64) & Wrapping(PRIME_Y)),
+                    zrbp + (Wrapping(!zNMask as i64) & Wrapping(PRIME_Z)),
                     x3,
                     y3,
                     z3,
@@ -381,7 +381,7 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
                 * (a4 * a4)
                 * grad3(
                     seed2,
-                    xrbp + (Wrapping(xNMask as i64) & (Wrapping(PRIME_X) * Wrapping(2))),
+                    xrbp + (Wrapping(xNMask as i64) & (Wrapping(PRIME_X) << 1)),
                     yrbp + Wrapping(PRIME_Y),
                     zrbp + Wrapping(PRIME_Z),
                     x4,
@@ -402,9 +402,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
             * (a6 * a6)
             * grad3(
                 seed,
-                xrbp + Wrapping(xNMask as i64) & Wrapping(PRIME_X),
-                yrbp + Wrapping(!yNMask as i64) & Wrapping(PRIME_Y),
-                zrbp + Wrapping(zNMask as i64) & Wrapping(PRIME_Z),
+                xrbp + (Wrapping(xNMask as i64) & Wrapping(PRIME_X)),
+                yrbp + (Wrapping(!yNMask as i64) & Wrapping(PRIME_Y)),
+                zrbp + (Wrapping(zNMask as i64) & Wrapping(PRIME_Z)),
                 x6,
                 y6,
                 z6,
@@ -419,9 +419,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
                 * (a7 * a7)
                 * grad3(
                     seed,
-                    xrbp + Wrapping(!xNMask as i64) & Wrapping(PRIME_X),
-                    yrbp + Wrapping(yNMask as i64) & Wrapping(PRIME_Y),
-                    zrbp + Wrapping(!zNMask as i64) & Wrapping(PRIME_Z),
+                    xrbp + (Wrapping(!xNMask as i64) & Wrapping(PRIME_X)),
+                    yrbp + (Wrapping(yNMask as i64) & Wrapping(PRIME_Y)),
+                    zrbp + (Wrapping(!zNMask as i64) & Wrapping(PRIME_Z)),
                     x7,
                     y7,
                     z7,
@@ -458,9 +458,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
             * (aA * aA)
             * grad3(
                 seed,
-                xrbp + Wrapping(xNMask as i64) & Wrapping(PRIME_X),
-                yrbp + Wrapping(yNMask as i64) & Wrapping(PRIME_Y),
-                zrbp + Wrapping(!zNMask as i64) & Wrapping(PRIME_Z),
+                xrbp + (Wrapping(xNMask as i64) & Wrapping(PRIME_X)),
+                yrbp + (Wrapping(yNMask as i64) & Wrapping(PRIME_Y)),
+                zrbp + (Wrapping(!zNMask as i64) & Wrapping(PRIME_Z)),
                 xA,
                 yA,
                 zA,
@@ -475,9 +475,9 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
                 * (aB * aB)
                 * grad3(
                     seed,
-                    xrbp + Wrapping(!xNMask as i64) & Wrapping(PRIME_X),
-                    yrbp + Wrapping(!yNMask as i64) & Wrapping(PRIME_Y),
-                    zrbp + Wrapping(zNMask as i64) & Wrapping(PRIME_Z),
+                    xrbp + (Wrapping(!xNMask as i64) & Wrapping(PRIME_X)),
+                    yrbp + (Wrapping(!yNMask as i64) & Wrapping(PRIME_Y)),
+                    zrbp + (Wrapping(zNMask as i64) & Wrapping(PRIME_Z)),
                     xB,
                     yB,
                     zB,
@@ -534,7 +534,7 @@ fn noise3_UnrotatedBase(seed: i64, xr: f64, yr: f64, zr: f64) -> f32 {
                 * (a9 * a9)
                 * grad3(
                     seed2,
-                    xrbp + (Wrapping(xNMask as i64) & (Wrapping(PRIME_X) * Wrapping(2))),
+                    xrbp + (Wrapping(xNMask as i64) & (Wrapping(PRIME_X) << 1)),
                     yrbp + Wrapping(PRIME_Y),
                     zrbp + (Wrapping(zNMask as i64) & (Wrapping(PRIME_Z) << 1)),
                     x9,

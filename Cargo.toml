@@ -1,14 +1,14 @@
 [package]
 name = "opensimplex2"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 
 description = "Port of OpenSimplex2"
 authors = ["KdotJPG"]
 license = "CC0-1.0"
 repository = "https://github.com/KdotJPG/OpenSimplex2"
-categories = ["algorithms"]
-keywords = ["OpenSimplex", "noise"]
+categories = ["algorithms", "graphics", "game-development"]
+keywords = ["OpenSimplex", "Simplex", "noise", "random", "Perlin"]
 
 # omit java, etc. from .crate file
 include = [
