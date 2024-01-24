@@ -37,6 +37,17 @@ Gradient vector tables were also revisited to improve probability symmetry in bo
 
 Note: area-generators have been moved to [their original repository](https://github.com/KdotJPG/Noise-VertexQueue-AreaGen).
 
+## C FFI usage
+Install a [Rust toolchain](https://www.rust-lang.org/tools/install) if needed.
+
+Build debug or release artifacts with:
+```
+cargo build
+# or
+cargo build --release
+```
+Library files will be in `./target/{debug,release}/`. Copy header from [`./rust/OpenSimplex2.h`](./rust/OpenSimplex2.h).
+
 ## Changelog
 
 * Tuned up this `README.md`. (Mar 26, 2022)
